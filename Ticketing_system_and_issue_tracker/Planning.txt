@@ -1,0 +1,58 @@
+1. Apps
+- Users
+- Tickets
+- Projects
+- User/Project management
+
+- Project-wide functionality
+  * Tables containing info should be paginated
+  * Tables should be sortable
+  * Should be able to increase/decrease number of entries shown
+
+
+2. Models
+For Users
+- Admin - can do everything
+- Developer - can change status of ticket
+- Submitter - can create new tickets
+- Project managers - can assign users and developers to tickets
+- Demo ?
+
+- Relationships: One to many
+
+For tickets
+- Ticket
+    - Tickets have varying levels of severity
+    - Types of ticket? Bug report, feature request? Doesn't really matter, just want the functionality of having multiple
+    - Fields: (Title, Description, Priority, Submitter, Type, Status (open/closed etc), Date created, Date updated,
+                Assigned developer - automatically assign developer with least tickets already assigned to them?)
+
+    - Main ticket page contains: * Ticket details (fields above), Ticket comments, Ticket history (all changes to ticket and when they happened
+                                 ie new dev assigned, new comment made, change in ticket status etc)
+                                 * Option to edit ticket - Admin can change everything, Dev can change the status, Project manager can change assigned dev)
+                                 * All tickets - see all tickets visible to you - Admin sees all, Dev sees all tickets for project they're working on
+                                 (dev can also filter to tickets assigned to them directly), Project manager sees tickets for project assigned to them
+                                 (everybody can filter tickets by project, type, dev, status, priority, date and title)
+
+    - Relationships: * One to Many with comment
+                     * Many to Many with Users
+                     * Many to one with Projects
+
+- Comment
+    - Fields (Commenter, Message, Date created)
+    - Can be edited by Submitter and can be edited/deleted by Admin
+
+Projects
+- Many to Many with and Users
+- Project page contains: * Project name and project description
+                         * Assigned personnel
+                         * Tickets belonging to said project
+
+Dashboard
+- Have dashboard that differs based on which type of user
+  - For Admin: List of all projects, manage user roles ie make user a developer or submitter etc,
+  - For project manager: list of all projects
+  - For submitter: List of projects you're assigned, list of tickets you've made
+  - For Dev: list of projects you're assigned, list of tickets you've been assigned
+
+Maybe ingrain messaging IM tool? Maybe useless?
