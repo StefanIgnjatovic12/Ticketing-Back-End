@@ -20,8 +20,10 @@ from Users import views as user_views
 from django.contrib.auth import views as auth_views
 from django.conf import settings
 from django.conf.urls.static import static
+from django.views.generic import TemplateView
 
 urlpatterns = [
+    # path('', TemplateView.as_view(template_name='index.html')),
     path('api/', include('api.urls')),
     path('admin/', admin.site.urls),
     path('register/', user_views.register, name='register'),

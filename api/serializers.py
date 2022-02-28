@@ -5,14 +5,16 @@ from Users.models import Role
 from tickets.models import Ticket, Comment
 from projects.models import Project
 
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = '__all__'
-
 class RoleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Role
+        fields = ['user', 'assigned_role']
+
+class UserSerializer(serializers.ModelSerializer):
+    roles = RoleSerializer(read_only=True, many=False)
+
+    class Meta:
+        model = User
         fields = '__all__'
 
 class TicketSerializer(serializers.ModelSerializer):

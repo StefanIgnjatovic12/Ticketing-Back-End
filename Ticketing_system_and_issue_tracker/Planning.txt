@@ -56,3 +56,12 @@ Dashboard
   - For Dev: list of projects you're assigned, list of tickets you've been assigned
 
 Maybe ingrain messaging IM tool? Maybe useless?
+
+--------------------------------------------
+
+React
+
+Components:
+1. Header > notifications (?), profile, logout
+2. Side bar > varies based on role
+3. Tables > most important part
