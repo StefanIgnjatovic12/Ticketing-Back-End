@@ -1,6 +1,9 @@
 from django.urls import path
 
+import api.views
 from . import views
+from api.views import editRoleData
+
 
 urlpatterns = [
     path('users/', views.getUserData),
@@ -12,7 +15,8 @@ urlpatterns = [
     path('users-update/<str:pk>/', views.editUserData),
     path('users-delete/<str:pk>/', views.deleteUser),
 
-    path('update-role/<str:pk>/', views.editRoleData),
+    path('update-role/<str:pk>/', views.editOneRoleData),
+    path('update-role/', editRoleData.as_view()),
 
     path('comment-update/<str:pk>/', views.editCommentData),
     path('comment-delete/<str:pk>/', views.deleteComment),
