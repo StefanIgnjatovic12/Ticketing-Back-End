@@ -186,10 +186,16 @@ def getProjectData(request):
 
 
 @api_view(['GET'])
-def getAssignedPersonnel(request, pk):
+def getProjectDetails(request, pk):
     project = Project.objects.get(id=pk)
     serializer = ProjectSerializer(project)
+
+
     user_list = []
+    ticket_list = []
+    final_list = []
+
+    # loops over users assigned to project and adds 1 dictionary per user to the user_list
     for user in serializer.data['assigned_users']:
         user_list.append(
             {
@@ -201,7 +207,20 @@ def getAssignedPersonnel(request, pk):
                 'email': user['email'],
             }
         )
-    return Response(user_list)
+
+    # loops over the tickets assigned to a project and adds them to the ticket list
+    for ticket in serializer.data['assigned_tickets']:
+        ticket_list.append(ticket)
+
+
+    main_dict = {
+        'assigned_users':user_list,
+        'assigned_tickets': ticket_list
+    }
+
+    final_list.append(main_dict)
+    return Response(final_list)
+    # return Response(serializer.data)
 
 
 @api_view(['POST'])

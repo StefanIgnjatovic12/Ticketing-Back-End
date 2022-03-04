@@ -24,7 +24,7 @@ urlpatterns = [
     path('ticket-update/<str:pk>/', views.editTicketData),
     path('ticket-delete/<str:pk>/', views.deleteTicket),
 
-    path('projects/<str:pk>/', views.getAssignedPersonnel),
+    path('projects/<str:pk>/', views.getProjectDetails),
     path('project-update/<str:pk>/', views.editProjectData),
     path('project-delete/<str:pk>/', views.deleteProject),
 
