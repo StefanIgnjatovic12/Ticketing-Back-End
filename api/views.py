@@ -10,6 +10,7 @@ from tickets.models import Ticket, Comment
 from .serializers import UserSerializer, RoleSerializer, TicketSerializer, CommentSerializer, ProjectSerializer
 from rest_framework.views import APIView
 
+
 # Get serialized objects of all the models in the project
 
 # User object
@@ -58,12 +59,12 @@ def deleteUser(request, pk):
 # Role object
 
 
-
 @api_view(['GET'])
 def getRoleData(request):
     items = Role.objects.all()
     serializer = RoleSerializer(items, many=True)
     return Response(serializer.data)
+
 
 # Update 1 role for 1 person
 @api_view(['PUT'])
@@ -78,6 +79,7 @@ def editOneRoleData(request, pk):
     print(role.assigned_role)
     return Response(serializer.data)
 
+
 # Update multiple roles at once
 class editRoleData(APIView):
     def get_object(self, obj_id):
@@ -85,7 +87,6 @@ class editRoleData(APIView):
             return Role.objects.get(user=obj_id)
         except (Role.DoesNotExist, ValidationError):
             raise status.HTTP_400_BAD_REQUEST
-
 
     def validate_ids(self, id_list):
         for id in id_list:
@@ -171,8 +172,36 @@ def deleteComment(request, pk):
 @api_view(['GET'])
 def getProjectData(request):
     items = Project.objects.all()
-    serializer = ProjectSerializer(items, many=True)
-    return Response(serializer.data)
+
+    paginator = LimitOffsetPagination()
+    result_page = paginator.paginate_queryset(items, request)
+
+    serializer_page = ProjectSerializer(result_page, many=True)
+    serializer_full = ProjectSerializer(items, many=True)
+
+    if 'limit' not in request.query_params:
+        return Response(serializer_full.data)
+    else:
+        return Response(serializer_page.data)
+
+
+@api_view(['GET'])
+def getAssignedPersonnel(request, pk):
+    project = Project.objects.get(id=pk)
+    serializer = ProjectSerializer(project)
+    user_list = []
+    for user in serializer.data['assigned_users']:
+        user_list.append(
+            {
+                'user_id': user['id'],
+                'assigned_role': user['roles']['assigned_role'],
+                'username': user['username'],
+                'first_name': user['first_name'],
+                'last_name': user['last_name'],
+                'email': user['email'],
+            }
+        )
+    return Response(user_list)
 
 
 @api_view(['POST'])

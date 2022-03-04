@@ -28,6 +28,9 @@ class CommentSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class ProjectSerializer(serializers.ModelSerializer):
+    created_by = UserSerializer(read_only=True, many=False)
+    assigned_users = UserSerializer(read_only=True, many=True)
+
     class Meta:
         model = Project
         fields = '__all__'
