@@ -13,12 +13,6 @@ from rest_framework.views import APIView
 
 # Get serialized objects of all the models in the project
 
-# User object
-# @api_view(['GET'])
-# def getUserData(request):
-#     items = User.objects.all()
-#     serializer = UserSerializer(items, many=True)
-#     return Response(serializer.data)
 @api_view(['GET'])
 def getUserData(request):
     items = User.objects.all()
@@ -73,10 +67,6 @@ def editOneRoleData(request, pk):
     serializer = RoleSerializer(instance=role, data=request.data)
     if serializer.is_valid():
         serializer.save()
-    print(role.assigned_role)
-    print(request.data)
-    print(serializer.data)
-    print(role.assigned_role)
     return Response(serializer.data)
 
 
@@ -188,8 +178,8 @@ def getProjectData(request):
 @api_view(['GET'])
 def getProjectDetails(request, pk):
     project = Project.objects.get(id=pk)
-    serializer = ProjectSerializer(project)
 
+    serializer = ProjectSerializer(project)
 
     user_list = []
     ticket_list = []
@@ -210,11 +200,20 @@ def getProjectDetails(request, pk):
 
     # loops over the tickets assigned to a project and adds them to the ticket list
     for ticket in serializer.data['assigned_tickets']:
-        ticket_list.append(ticket)
-
+        ticket_list.append(
+            {
+                'title': ticket['title'],
+                'description': ticket['description'],
+                'priority': ticket['priority'],
+                'id': ticket['id'],
+                'created_by': f"{ticket['created_by']['first_name']} {ticket['created_by']['last_name']}"
+            }
+        )
+        # ticket_list.append(ticket)
 
     main_dict = {
-        'assigned_users':user_list,
+
+        'assigned_users': user_list,
         'assigned_tickets': ticket_list
     }
 
@@ -241,7 +240,6 @@ def deleteProject(request, pk):
 
 @api_view(['DELETE'])
 def deleteAssignedUser(request, projectId, userId):
-
     # get Project
     project = Project.objects.get(id=projectId)
     # get user from users assigned to specified project
@@ -252,15 +250,15 @@ def deleteAssignedUser(request, projectId, userId):
 
     return Response('User removed from project')
 
+
 @api_view(['DELETE'])
 def deleteAssignedTicket(request, projectId, ticketId):
-
     # get Project
     project = Project.objects.get(id=projectId)
     # get ticket from tickets assigned to specified project
     ticket = project.assigned_tickets.get(id=ticketId)
 
     # remove ticket from project without deleting the ticket object itself
-    project.assigned_users.remove(ticket)
+    project.assigned_tickets.remove(ticket)
 
     return Response('Ticket removed from project')

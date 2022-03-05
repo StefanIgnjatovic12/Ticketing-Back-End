@@ -18,6 +18,8 @@ class UserSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class TicketSerializer(serializers.ModelSerializer):
+    created_by = UserSerializer(read_only=True, many=False)
+
     class Meta:
         model = Ticket
         fields = '__all__'

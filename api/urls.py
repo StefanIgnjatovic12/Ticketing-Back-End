@@ -28,8 +28,8 @@ urlpatterns = [
     path('project-update/<str:pk>/', views.editProjectData),
     path('project-delete/<str:pk>/', views.deleteProject),
 
-    path('assigned-user-delete/<str:projectId>/<str:userId>', views.deleteAssignedUser),
-    path('assigned-ticket-delete/<str:projectId>/<str:ticketId>', views.deleteAssignedTicket),
+    path('assigned-user-delete/projects/<str:projectId>/<str:userId>/', views.deleteAssignedUser),
+    path('assigned-ticket-delete/projects/<str:projectId>/<str:ticketId>/', views.deleteAssignedTicket),
 
 
 ]
