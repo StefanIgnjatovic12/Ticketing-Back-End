@@ -237,3 +237,30 @@ def deleteProject(request, pk):
     project = Project.objects.get(id=pk)
     project.delete()
     return Response('Placeholder: project deleted')
+
+
+@api_view(['DELETE'])
+def deleteAssignedUser(request, projectId, userId):
+
+    # get Project
+    project = Project.objects.get(id=projectId)
+    # get user from users assigned to specified project
+    user = project.assigned_users.get(id=userId)
+
+    # remove user from project without deleting the user object itself
+    project.assigned_users.remove(user)
+
+    return Response('User removed from project')
+
+@api_view(['DELETE'])
+def deleteAssignedTicket(request, projectId, ticketId):
+
+    # get Project
+    project = Project.objects.get(id=projectId)
+    # get ticket from tickets assigned to specified project
+    ticket = project.assigned_tickets.get(id=ticketId)
+
+    # remove ticket from project without deleting the ticket object itself
+    project.assigned_users.remove(ticket)
+
+    return Response('Ticket removed from project')
