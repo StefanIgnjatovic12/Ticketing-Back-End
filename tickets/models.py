@@ -9,10 +9,10 @@ from django.urls import reverse
 
 class Ticket(models.Model):
     PRIORITY_CHOICES = [
-        ('urgent', 'Urgent'),
-        ('high', 'High'),
-        ('medium', 'Medium'),
-        ('low', 'Low')
+        ('Urgent', 'Urgent'),
+        ('High', 'High'),
+        ('Medium', 'Medium'),
+        ('Low', 'Low')
     ]
 
     title = models.CharField(max_length=100, blank=False)
