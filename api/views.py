@@ -113,6 +113,48 @@ def getTicketData(request):
     return Response(serializer.data)
 
 
+@api_view(['GET'])
+def getTicketDetails(request, pk):
+    ticket = Ticket.objects.get(id=pk)
+    serializer = TicketSerializer(ticket)
+
+    final_list = []
+    comment_list = []
+
+    ticket_author = {
+        'user_id': serializer.data['id'],
+        'username': serializer.data['created_by']['username'],
+        'first_name': serializer.data['created_by']['first_name'],
+        'last_name': serializer.data['created_by']['last_name'],
+        'email': serializer.data['created_by']['email'],
+    }
+
+    ticket_info = {
+        'title': serializer.data['title'],
+        'description': serializer.data['description'],
+        'created_on': serializer.data['created_on'],
+        'priority': serializer.data['priority']
+    }
+
+    for comment in serializer.data['comments']:
+        comment_list.append(
+            {
+                'content': comment['content'],
+                'created_on': comment['created_on'],
+                'created_by': f"{comment['created_by']['first_name']} {comment['created_by']['last_name']}"
+
+            }
+        )
+    main_dict = {
+        "ticket_author":ticket_author,
+        "comments":comment_list,
+        "ticket_info": ticket_info
+    }
+    final_list.append(main_dict)
+    # return Response(serializer.data)
+    return Response(final_list)
+
+
 @api_view(['POST'])
 def editTicketData(request, pk):
     comment = Ticket.objects.get(id=pk)

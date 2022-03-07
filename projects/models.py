@@ -13,6 +13,7 @@ class Project(models.Model):
     # https://stackoverflow.com/questions/34305805/foreignkey-user-in-models
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='created_by')
     assigned_users = models.ManyToManyField(User, related_name='assigned_users')
+    # check back to use foreign key on this since it's one to many
     assigned_tickets = models.ManyToManyField(Ticket, related_name='assigned_tickets')
 
     def __str__(self):
