@@ -3,12 +3,6 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 from django.conf import settings
 from django.urls import reverse
-# Create your models here.
-
-
-
-
-
 
 
 class Ticket(models.Model):
@@ -26,9 +20,10 @@ class Ticket(models.Model):
     priority = models.CharField(max_length=6, choices=PRIORITY_CHOICES, default='low')
     # assigned_comments = models.ForeignKey(Comment, on_delete=models.CASCADE, null=True, related_name='assigned_comments')
 
-
     def __str__(self):
         return self.title
+
+
 
 class Comment(models.Model):
     content = models.TextField(default='', blank=False)
@@ -38,3 +33,4 @@ class Comment(models.Model):
 
     def __str__(self):
         return self.content
+

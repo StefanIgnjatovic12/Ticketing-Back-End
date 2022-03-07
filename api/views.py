@@ -155,12 +155,13 @@ def getTicketDetails(request, pk):
     return Response(final_list)
 
 
-@api_view(['POST'])
+@api_view(['PUT'])
 def editTicketData(request, pk):
-    comment = Ticket.objects.get(id=pk)
-    serializer = TicketSerializer(instance=comment, data=request.data)
+    ticket = Ticket.objects.get(id=pk)
+    serializer = TicketSerializer(instance=ticket, data=request.data)
     if serializer.is_valid():
         serializer.save()
+
     return Response(serializer.data)
 
 
