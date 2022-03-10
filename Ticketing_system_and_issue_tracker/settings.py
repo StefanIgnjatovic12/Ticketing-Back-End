@@ -42,7 +42,8 @@ INSTALLED_APPS = [
 
     'rest_framework',
     'corsheaders',
-    'knox'
+    'knox',
+    'django_rest_passwordreset',
 
 ]
 
@@ -64,10 +65,10 @@ ROOT_URLCONF = 'Ticketing_system_and_issue_tracker.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates',
-                 # os.path.join(BASE_DIR, 'ticketingfrontend/public')
+        'DIRS': [
+            os.path.join(BASE_DIR, 'templates')
 
-                 ]
+        ]
         ,
         'APP_DIRS': True,
         'OPTIONS': {
@@ -77,6 +78,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
+
         },
     },
 ]
@@ -149,3 +151,10 @@ REST_FRAMEWORK = {
 
 MEDIA_URL = '/attachments/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'attachments')
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = ""
+EMAIL_HOST_PASSWORD = ""
