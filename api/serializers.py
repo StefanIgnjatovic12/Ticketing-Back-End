@@ -3,7 +3,7 @@ from rest_framework import serializers
 from django.db import models
 from django.contrib.auth.models import User
 from Users.models import Role
-from tickets.models import Ticket, Comment
+from tickets.models import Ticket, Comment, Attachment
 from projects.models import Project
 
 
@@ -20,7 +20,21 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = '__all__'
 
+# Register Serializer
+class RegisterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id', 'username', 'email', 'password', 'first_name', 'last_name')
+        extra_kwargs = {'password': {'write_only': True}}
 
+    def create(self, validated_data):
+        user = User.objects.create_user(validated_data['username'],
+                                        validated_data['email'],
+                                        validated_data['password'],
+                                        first_name=validated_data['first_name'],
+                                        last_name=validated_data['last_name'])
+
+        return user
 class CommentSerializer(serializers.ModelSerializer):
     created_by = UserSerializer(read_only=True, many=False)
 
@@ -28,10 +42,16 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
         fields = '__all__'
 
+class AttachmentSerialiazer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Attachment
+        fields = '__all__'
 
 class TicketSerializer(serializers.ModelSerializer):
     created_by = UserSerializer(read_only=True, many=False)
     comments = CommentSerializer(read_only=True, many=True)
+    attachment = AttachmentSerialiazer(read_only=True, many=True)
 
 
     class Meta:

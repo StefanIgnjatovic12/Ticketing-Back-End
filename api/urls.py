@@ -1,35 +1,44 @@
-from django.urls import path
-
+from django.template.defaulttags import url
+from django.urls import path, include
+from knox import views as knox_views
 import api.views
 from . import views
-from api.views import editRoleData
+from api.views import EditRoleData, UploadTicketAttachment, RegisterAPI, LoginAPI
 
 urlpatterns = [
-    path('users/', views.getUserData),
-    path('roles/', views.getRoleData),
-    path('tickets/', views.getTicketData),
-    path('comments/', views.getCommentData),
-    path('projects/', views.getProjectData),
+    # url(r'api/auth/', include('knox.urls')),
+    path('register/', RegisterAPI.as_view(), name='register'),
+    path('login/', LoginAPI.as_view(), name='login'),
+    path('logout/', knox_views.LogoutView.as_view(), name='logout'),
+    path('logoutall/', knox_views.LogoutAllView.as_view(), name='logoutall'),
+    path('users/', views.getuserdata),
+    path('roles/', views.getroledata),
+    path('tickets/', views.getticketdata),
+    path('comments/', views.getcommentdata),
+    path('projects/', views.getprojectdata),
 
-    path('users-update/<str:pk>/', views.editUserData),
-    path('users-delete/<str:pk>/', views.deleteUser),
+    path('users-update/<str:pk>/', views.edituserdata),
+    path('users-delete/<str:pk>/', views.deleteuser),
 
-    path('update-role/<str:pk>/', views.editOneRoleData),
-    path('update-role/', editRoleData.as_view()),
+    path('update-role/<str:pk>/', views.editoneroledata),
+    path('update-role/', EditRoleData.as_view()),
 
-    path('comment-update/<str:pk>/', views.editCommentData),
-    path('comment-delete/<str:pk>/', views.deleteComment),
+    path('comment-update/<str:pk>/', views.editcommentdata),
+    path('comment-delete/<str:pk>/', views.deletecomment),
 
-    path('tickets/<str:pk>/', views.getTicketDetails),
-    path('ticket-update/<str:pk>/', views.editTicketData),
-    path('ticket-delete/<str:pk>/', views.deleteTicket),
+    path('tickets/<str:pk>/', views.getticketdetails),
+    path('ticket-update/<str:pk>/', views.editticketdata),
+    path('ticket-delete/<str:pk>/', views.deleteticket),
 
-    path('projects/<str:pk>/', views.getProjectDetails),
+    path('attachment-upload/', UploadTicketAttachment.as_view()),
+    path('attachment-delete/<str:pk>', views.deleteattachment),
 
-    path('project-update/<str:pk>/', views.editProjectData),
-    path('project-delete/<str:pk>/', views.deleteProject),
+    path('projects/<str:pk>/', views.getprojectdetails),
 
-    path('assigned-user-delete/projects/<str:projectId>/<str:userId>/', views.deleteAssignedUser),
-    path('assigned-ticket-delete/projects/<str:projectId>/<str:ticketId>/', views.deleteAssignedTicket),
+    path('project-update/<str:pk>/', views.editprojectdata),
+    path('project-delete/<str:pk>/', views.deleteproject),
+
+    path('assigned-user-delete/projects/<str:projectId>/<str:userId>/', views.deleteassigneduser),
+    path('assigned-ticket-delete/projects/<str:projectId>/<str:ticketId>/', views.deleteassignedticket),
 
 ]

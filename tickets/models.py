@@ -13,12 +13,12 @@ class Ticket(models.Model):
         ('Low', 'Low')
     ]
 
-    title = models.CharField(max_length=100, blank=False)
-    description = models.TextField(default='', blank=False)
+    title = models.CharField(max_length=100, blank=True)
+    description = models.TextField(default='', blank=True)
     created_on = models.DateTimeField(default=timezone.now)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     priority = models.CharField(max_length=6, choices=PRIORITY_CHOICES, default='low')
-    # assigned_comments = models.ForeignKey(Comment, on_delete=models.CASCADE, null=True, related_name='assigned_comments')
+
 
     def __str__(self):
         return self.title
@@ -34,3 +34,10 @@ class Comment(models.Model):
     def __str__(self):
         return self.content
 
+class Attachment(models.Model):
+    file = models.FileField(blank=True, null=True)
+    # add this later
+    # uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    parent_ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE, null=True, related_name="attachment")
+    def __str__(self):
+        return self.file.name

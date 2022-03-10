@@ -1,20 +1,52 @@
 from django.contrib.auth.models import User
 from rest_framework.decorators import api_view
 from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 from django.core.exceptions import ValidationError
-from rest_framework import status
+from rest_framework import status, generics, permissions
 from Users.models import Role
 from projects.models import Project
-from tickets.models import Ticket, Comment
-from .serializers import UserSerializer, RoleSerializer, TicketSerializer, CommentSerializer, ProjectSerializer
+from tickets.models import Ticket, Comment, Attachment
+from .serializers import (AttachmentSerialiazer,
+                          UserSerializer,
+                          RoleSerializer,
+                          TicketSerializer,
+                          CommentSerializer,
+                          ProjectSerializer,
+                          RegisterSerializer)
 from rest_framework.views import APIView
+from rest_framework.response import Response
+from knox.models import AuthToken
+from knox.views import LoginView as KnoxLoginView
+from rest_framework.authtoken.serializers import AuthTokenSerializer
+from django.contrib.auth import login
 
+# Register API
+class RegisterAPI(generics.GenericAPIView):
+    serializer_class = RegisterSerializer
 
-# Get serialized objects of all the models in the project
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        return Response({
+        "user": UserSerializer(user, context=self.get_serializer_context()).data,
+        "token": AuthToken.objects.create(user)[1]
+        })
+
+class LoginAPI(KnoxLoginView):
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request, format=None):
+        serializer = AuthTokenSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data['user']
+        login(request, user)
+        return super(LoginAPI, self).post(request, format=None)
 
 @api_view(['GET'])
-def getUserData(request):
+def getuserdata(request):
     items = User.objects.all()
 
     # enabling pagination because api_view doesn't have it by default
@@ -33,7 +65,7 @@ def getUserData(request):
 
 
 @api_view(['POST'])
-def editUserData(request, pk):
+def edituserdata(request, pk):
     user = User.objects.get(id=pk)
     serializer = UserSerializer(instance=user, data=request.data)
     if serializer.is_valid():
@@ -42,7 +74,7 @@ def editUserData(request, pk):
 
 
 @api_view(['DELETE'])
-def deleteUser(request, pk):
+def deleteuser(request, pk):
     user = User.objects.get(id=pk)
     user.delete()
     return Response('Placeholder: user deleted')
@@ -54,7 +86,7 @@ def deleteUser(request, pk):
 
 
 @api_view(['GET'])
-def getRoleData(request):
+def getroledata(request):
     items = Role.objects.all()
     serializer = RoleSerializer(items, many=True)
     return Response(serializer.data)
@@ -62,7 +94,7 @@ def getRoleData(request):
 
 # Update 1 role for 1 person
 @api_view(['PUT'])
-def editOneRoleData(request, pk):
+def editoneroledata(request, pk):
     role = Role.objects.get(user_id=pk)
     serializer = RoleSerializer(instance=role, data=request.data)
     if serializer.is_valid():
@@ -71,7 +103,7 @@ def editOneRoleData(request, pk):
 
 
 # Update multiple roles at once
-class editRoleData(APIView):
+class EditRoleData(APIView):
     def get_object(self, obj_id):
         try:
             return Role.objects.get(user=obj_id)
@@ -107,19 +139,20 @@ class editRoleData(APIView):
 
 # Ticket object
 @api_view(['GET'])
-def getTicketData(request):
+def getticketdata(request):
     items = Ticket.objects.all()
     serializer = TicketSerializer(items, many=True)
     return Response(serializer.data)
 
 
 @api_view(['GET'])
-def getTicketDetails(request, pk):
+def getticketdetails(request, pk):
     ticket = Ticket.objects.get(id=pk)
     serializer = TicketSerializer(ticket)
 
     final_list = []
     comment_list = []
+    attachment_list = []
 
     ticket_author = {
         'user_id': serializer.data['id'],
@@ -145,10 +178,18 @@ def getTicketDetails(request, pk):
 
             }
         )
+    for attachment in serializer.data['attachment']:
+        attachment_list.append (
+            {
+                'file_name': attachment['file'].split("/")[2],
+
+            }
+        )
     main_dict = {
-        "ticket_author":ticket_author,
-        "comments":comment_list,
-        "ticket_info": ticket_info
+        "ticket_author": ticket_author,
+        "comments": comment_list,
+        "ticket_info": ticket_info,
+        "attachments": attachment_list
     }
     final_list.append(main_dict)
     # return Response(serializer.data)
@@ -156,7 +197,7 @@ def getTicketDetails(request, pk):
 
 
 @api_view(['PUT'])
-def editTicketData(request, pk):
+def editticketdata(request, pk):
     ticket = Ticket.objects.get(id=pk)
     serializer = TicketSerializer(instance=ticket, data=request.data)
     if serializer.is_valid():
@@ -166,24 +207,49 @@ def editTicketData(request, pk):
 
 
 @api_view(['DELETE'])
-def deleteTicket(request, pk):
+def deleteticket(request, pk):
     ticket = Ticket.objects.get(id=pk)
     ticket.delete()
     return Response('Placeholder: ticket deleted')
 
 
+class UploadTicketAttachment(APIView):
+    permission_classes = []
+    parser_classes = (MultiPartParser, FormParser)
+
+    def post(self, request, format=None):
+
+      file = request.data
+      serializer = AttachmentSerialiazer(data=file)
+      if serializer.is_valid():
+          serializer.save()
+          print(serializer.data)
+          return Response(serializer.data['id'])
+      else:
+          # print(serializer.errors)
+          return Response(serializer.errors)
+
+
+
+
+@api_view(['DELETE'])
+def deleteattachment(request, pk):
+    attachment = Attachment.objects.get(id=pk)
+    attachment.delete()
+    return Response('Placeholder: attachment deleted')
 # -----------------------------------------------
+
 
 # Comment object
 @api_view(['GET'])
-def getCommentData(request):
+def getcommentdata(request):
     items = Comment.objects.all()
     serializer = CommentSerializer(items, many=True)
     return Response(serializer.data)
 
 
 @api_view(['POST'])
-def editCommentData(request, pk):
+def editcommentdata(request, pk):
     comment = Comment.objects.get(id=pk)
     serializer = CommentSerializer(instance=comment, data=request.data)
     if serializer.is_valid():
@@ -192,7 +258,7 @@ def editCommentData(request, pk):
 
 
 @api_view(['DELETE'])
-def deleteComment(request, pk):
+def deletecomment(request, pk):
     comment = Comment.objects.get(id=pk)
     comment.delete()
     return Response('Placeholder: comment deleted')
@@ -203,7 +269,7 @@ def deleteComment(request, pk):
 # Project object
 
 @api_view(['GET'])
-def getProjectData(request):
+def getprojectdata(request):
     items = Project.objects.all()
 
     paginator = LimitOffsetPagination()
@@ -219,7 +285,7 @@ def getProjectData(request):
 
 
 @api_view(['GET'])
-def getProjectDetails(request, pk):
+def getprojectdetails(request, pk):
     project = Project.objects.get(id=pk)
 
     serializer = ProjectSerializer(project)
@@ -266,7 +332,7 @@ def getProjectDetails(request, pk):
 
 
 @api_view(['POST'])
-def editProjectData(request, pk):
+def editprojectdata(request, pk):
     project = Project.objects.get(id=pk)
     serializer = ProjectSerializer(instance=project, data=request.data)
     if serializer.is_valid():
@@ -275,18 +341,18 @@ def editProjectData(request, pk):
 
 
 @api_view(['DELETE'])
-def deleteProject(request, pk):
+def deleteproject(request, pk):
     project = Project.objects.get(id=pk)
     project.delete()
     return Response('Placeholder: project deleted')
 
 
 @api_view(['DELETE'])
-def deleteAssignedUser(request, projectId, userId):
+def deleteassigneduser(request, projectid, userid):
     # get Project
-    project = Project.objects.get(id=projectId)
+    project = Project.objects.get(id=projectid)
     # get user from users assigned to specified project
-    user = project.assigned_users.get(id=userId)
+    user = project.assigned_users.get(id=userid)
 
     # remove user from project without deleting the user object itself
     project.assigned_users.remove(user)
@@ -295,11 +361,11 @@ def deleteAssignedUser(request, projectId, userId):
 
 
 @api_view(['DELETE'])
-def deleteAssignedTicket(request, projectId, ticketId):
+def deleteassignedticket(request, projectid, ticketid):
     # get Project
-    project = Project.objects.get(id=projectId)
+    project = Project.objects.get(id=projectid)
     # get ticket from tickets assigned to specified project
-    ticket = project.assigned_tickets.get(id=ticketId)
+    ticket = project.assigned_tickets.get(id=ticketid)
 
     # remove ticket from project without deleting the ticket object itself
     project.assigned_tickets.remove(ticket)
