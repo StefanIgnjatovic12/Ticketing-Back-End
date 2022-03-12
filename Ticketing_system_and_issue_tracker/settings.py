@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'knox',
     'django_rest_passwordreset',
+    'rest_framework.authtoken'
 
 ]
 
@@ -146,7 +147,7 @@ CORS_ALLOW_HEADERS = ("x-requested-with", "content-type", "accept", "origin", "a
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    'DEFAULT_AUTHENTICATION_CLASSES': ('knox.auth.TokenAuthentication',),
+    'DEFAULT_AUTHENTICATION_CLASSES': ('knox.auth.TokenAuthentication', ),
 }
 
 MEDIA_URL = '/attachments/'

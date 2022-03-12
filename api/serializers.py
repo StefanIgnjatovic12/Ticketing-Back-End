@@ -7,6 +7,7 @@ from tickets.models import Ticket, Comment, Attachment
 from projects.models import Project
 
 
+
 class RoleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Role
@@ -67,3 +68,4 @@ class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = '__all__'
+

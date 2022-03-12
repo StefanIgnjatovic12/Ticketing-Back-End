@@ -14,7 +14,9 @@ from .serializers import (AttachmentSerialiazer,
                           TicketSerializer,
                           CommentSerializer,
                           ProjectSerializer,
-                          RegisterSerializer)
+                          RegisterSerializer,
+
+                          )
 from rest_framework.views import APIView
 from rest_framework.response import Response
 # knox
@@ -22,6 +24,8 @@ from knox.models import AuthToken
 from knox.views import LoginView as KnoxLoginView
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from django.contrib.auth import login
+from rest_framework.authentication import BasicAuthentication
+
 # password reset
 from django.core.mail import EmailMultiAlternatives
 from django.dispatch import receiver
@@ -29,6 +33,8 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from django_rest_passwordreset.signals import reset_password_token_created
 from rest_framework.renderers import JSONRenderer
+
+
 # Register API
 class RegisterAPI(generics.GenericAPIView):
     serializer_class = RegisterSerializer
@@ -38,24 +44,19 @@ class RegisterAPI(generics.GenericAPIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         return Response({
-        "user": UserSerializer(user, context=self.get_serializer_context()).data,
-        "token": AuthToken.objects.create(user)[1]
+            "user": UserSerializer(user, context=self.get_serializer_context()).data,
+            "token": AuthToken.objects.create(user)[1]
         })
 
-class LoginAPI(KnoxLoginView):
-    permission_classes = (permissions.AllowAny,)
 
-    def post(self, request, format=None):
-        serializer = AuthTokenSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data['user']
-        login(request, user)
-        return super(LoginAPI, self).post(request, format=None)
+class LoginAPI(KnoxLoginView):
+    authentication_classes = [BasicAuthentication]
+
+
 
 # Password reset view > need to add user and password to settings
 @receiver(reset_password_token_created)
 def password_reset_token_created(sender, instance, reset_password_token, *args, **kwargs):
-
     context = {
         'current_user': reset_password_token.user,
         'username': reset_password_token.user.username,
@@ -82,6 +83,7 @@ def password_reset_token_created(sender, instance, reset_password_token, *args, 
     msg.attach_alternative(email_html_message, "text/html")
     # print(email_plaintext_message)
     msg.send()
+
 
 @api_view(['GET'])
 def getuserdata(request):
@@ -217,7 +219,7 @@ def getticketdetails(request, pk):
             }
         )
     for attachment in serializer.data['attachment']:
-        attachment_list.append (
+        attachment_list.append(
             {
                 'file_name': attachment['file'].split("/")[2],
 
@@ -237,6 +239,7 @@ def getticketdetails(request, pk):
 @api_view(['PUT'])
 def editticketdata(request, pk):
     ticket = Ticket.objects.get(id=pk)
+    print(request.user)
     serializer = TicketSerializer(instance=ticket, data=request.data)
     if serializer.is_valid():
         serializer.save()
@@ -257,17 +260,15 @@ class UploadTicketAttachment(APIView):
 
     def post(self, request, format=None):
 
-      file = request.data
-      serializer = AttachmentSerialiazer(data=file)
-      if serializer.is_valid():
-          serializer.save()
-          print(serializer.data)
-          return Response(serializer.data['id'])
-      else:
-          # print(serializer.errors)
-          return Response(serializer.errors)
-
-
+        file = request.data
+        serializer = AttachmentSerialiazer(data=file)
+        if serializer.is_valid():
+            serializer.save()
+            print(serializer.data)
+            return Response(serializer.data['id'])
+        else:
+            # print(serializer.errors)
+            return Response(serializer.errors)
 
 
 @api_view(['DELETE'])
@@ -275,6 +276,8 @@ def deleteattachment(request, pk):
     attachment = Attachment.objects.get(id=pk)
     attachment.delete()
     return Response('Placeholder: attachment deleted')
+
+
 # -----------------------------------------------
 
 
@@ -289,6 +292,7 @@ def getcommentdata(request):
 @api_view(['POST'])
 def editcommentdata(request, pk):
     comment = Comment.objects.get(id=pk)
+
     serializer = CommentSerializer(instance=comment, data=request.data)
     if serializer.is_valid():
         serializer.save()
@@ -300,6 +304,11 @@ def deletecomment(request, pk):
     comment = Comment.objects.get(id=pk)
     comment.delete()
     return Response('Placeholder: comment deleted')
+
+
+@api_view(['POST'])
+def createcomment(request):
+    comment = Comment()
 
 
 # -----------------------------------------------
