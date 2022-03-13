@@ -23,12 +23,14 @@ urlpatterns = [
     path('update-role/<str:pk>/', views.editoneroledata),
     path('update-role/', EditRoleData.as_view()),
 
+
+    path('comment-create/', views.createcomment),
     path('comment-update/<str:pk>/', views.editcommentdata),
-    path('comment-delete/<str:pk>/', views.deletecomment),
+    path('comment-delete/', views.deletecomment),
 
     path('tickets/<str:pk>/', views.getticketdetails),
     path('ticket-update/<str:pk>/', views.editticketdata),
-    path('ticket-delete/<str:pk>/', views.deleteticket),
+    path('ticket-delete/', views.deleteticket),
 
     path('attachment-upload/', UploadTicketAttachment.as_view()),
     path('attachment-delete/<str:pk>', views.deleteattachment),
@@ -36,9 +38,8 @@ urlpatterns = [
     path('projects/<str:pk>/', views.getprojectdetails),
 
     path('project-update/<str:pk>/', views.editprojectdata),
-    path('project-delete/<str:pk>/', views.deleteproject),
+    path('project-delete/', views.deleteproject),
 
-    path('assigned-user-delete/projects/<str:projectId>/<str:userId>/', views.deleteassigneduser),
-    path('assigned-ticket-delete/projects/<str:projectId>/<str:ticketId>/', views.deleteassignedticket),
+    path('assigned-user-delete/projects/<str:projectId>/', views.deleteassigneduser),
 
 ]
