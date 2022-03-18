@@ -55,7 +55,6 @@ class LoginAPI(KnoxLoginView):
     authentication_classes = [BasicAuthentication]
 
 
-
 # Password reset view > need to add user and password to settings
 @receiver(reset_password_token_created)
 def password_reset_token_created(sender, instance, reset_password_token, *args, **kwargs):
@@ -189,11 +188,13 @@ def getticketdata(request):
 @api_view(['GET'])
 def getticketdetails(request, pk):
     ticket = Ticket.objects.get(id=pk)
+
     serializer = TicketSerializer(ticket)
 
     final_list = []
     comment_list = []
     attachment_list = []
+    ticket_changes = []
 
     ticket_author = {
         'user_id': serializer.data['id'],
@@ -223,23 +224,43 @@ def getticketdetails(request, pk):
         attachment_list.append(
             {
                 'file_name': attachment['file'].split("/")[2],
-
+                'uploaded_by': f"{attachment['uploaded_by']['first_name']} {attachment['uploaded_by']['last_name']}",
+                'created_on': attachment['created_on']
             }
         )
+     # loops through the history table and logs the differences/edits
+    for current_edit in ticket.history.all()[:2]:
+        previous_edit = current_edit.prev_record
+        delta = current_edit.diff_against(previous_edit)
+        print(len(delta.changes))
+        for change in delta.changes[:3]:
+            ticket_changes.append(
+                {
+                    'changed_field': change.field,
+                    'old_value': change.old,
+                    'new_value': change.new
+                }
+            )
+
     main_dict = {
         "ticket_author": ticket_author,
         "comments": comment_list,
         "ticket_info": ticket_info,
-        "attachments": attachment_list
+        "attachments": attachment_list,
+        "ticket_history": ticket_changes[:4]
     }
     final_list.append(main_dict)
     # return Response(serializer.data)
     return Response(final_list)
 
 
+# @api_view(['GET'])
+# def getticketedithistory(request):
+
 @api_view(['PUT'])
 def editticketdata(request, pk):
     ticket = Ticket.objects.get(id=pk)
+    print()
     serializer = TicketSerializer(instance=ticket, data=request.data)
     if serializer.is_valid():
         serializer.save()
@@ -260,10 +281,12 @@ class UploadTicketAttachment(APIView):
     parser_classes = (MultiPartParser, FormParser)
 
     def post(self, request, format=None):
-        file = request.data
-        print(file)
-        serializer = AttachmentSerialiazer(data=file)
+
+        user = request.user
+
+        serializer = AttachmentSerialiazer(data=request.data)
         if serializer.is_valid():
+            serializer.validated_data['uploaded_by'] = user
             serializer.save()
             return Response(serializer.data['id'])
         else:
@@ -312,13 +335,12 @@ def createcomment(request):
     user = User.objects.get(username=request.user)
     parent_ticket = Ticket.objects.get(id=int(request.data['parent_ticket']))
     content = request.data['comment']
-    created_on = "2022-03-05T16:50:18Z"
-    print(content, parent_ticket)
+    created_on = request.data['created_on']
+
     comment = Comment.objects.create(content=content,
                                      parent_ticket=parent_ticket,
                                      created_by=user,
                                      created_on=created_on)
-    print(comment)
     return Response('Create comment request went through')
 
 
@@ -417,6 +439,3 @@ def deleteassigneduser(request, projectId):
         project.assigned_users.remove(user)
 
     return Response('User removed from project')
-
-
-

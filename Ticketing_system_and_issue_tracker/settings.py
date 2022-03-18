@@ -14,6 +14,8 @@ import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
+
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Quick-start development settings - unsuitable for production
@@ -44,7 +46,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'knox',
     'django_rest_passwordreset',
-    'rest_framework.authtoken'
+    'rest_framework.authtoken',
+    'simple_history',
 
 ]
 
@@ -58,6 +61,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'simple_history.middleware.HistoryRequestMiddleware',
 
 ]
 
@@ -147,7 +151,7 @@ CORS_ALLOW_HEADERS = ("x-requested-with", "content-type", "accept", "origin", "a
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    'DEFAULT_AUTHENTICATION_CLASSES': ('knox.auth.TokenAuthentication', ),
+    'DEFAULT_AUTHENTICATION_CLASSES': ('knox.auth.TokenAuthentication',),
 }
 
 MEDIA_URL = '/attachments/'
@@ -159,3 +163,7 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = ""
 EMAIL_HOST_PASSWORD = ""
+
+SILENCED_SYSTEM_CHECKS = [
+    'django_jsonfield_backport.W001'
+]

@@ -44,6 +44,7 @@ class CommentSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class AttachmentSerialiazer(serializers.ModelSerializer):
+    uploaded_by = UserSerializer(read_only=True, many=False)
 
     class Meta:
         model = Attachment
@@ -51,6 +52,7 @@ class AttachmentSerialiazer(serializers.ModelSerializer):
 
 class TicketSerializer(serializers.ModelSerializer):
     created_by = UserSerializer(read_only=True, many=False)
+    changed_by = UserSerializer(read_only=True, many=False)
     comments = CommentSerializer(read_only=True, many=True)
     attachment = AttachmentSerialiazer(read_only=True, many=True)
 
