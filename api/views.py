@@ -20,7 +20,7 @@ from .serializers import (AttachmentSerialiazer,
                           )
 from rest_framework.views import APIView
 from rest_framework.response import Response
-import datetime
+from django.http import FileResponse
 # knox
 from knox.models import AuthToken
 from knox.views import LoginView as KnoxLoginView
@@ -191,7 +191,7 @@ def getticketdetails(request, pk):
 
     serializer = TicketSerializer(ticket)
 
-    final_list = []
+
     comment_list = []
     attachment_list = []
     ticket_changes = []
@@ -225,37 +225,35 @@ def getticketdetails(request, pk):
             {
                 'file_name': attachment['file'].split("/")[2],
                 'uploaded_by': f"{attachment['uploaded_by']['first_name']} {attachment['uploaded_by']['last_name']}",
-                'created_on': attachment['created_on']
+                'created_on': attachment['created_on'],
+                'id': attachment['id']
             }
         )
      # loops through the history table and logs the differences/edits
-    for current_edit in ticket.history.all()[:2]:
+    for current_edit in ticket.history.all()[:4]:
         previous_edit = current_edit.prev_record
-        delta = current_edit.diff_against(previous_edit)
-        print(len(delta.changes))
-        for change in delta.changes[:3]:
-            ticket_changes.append(
-                {
-                    'changed_field': change.field,
-                    'old_value': change.old,
-                    'new_value': change.new
-                }
-            )
+        if current_edit and previous_edit is not None:
+            delta = current_edit.diff_against(previous_edit)
+            for change in delta.changes[:3]:
+                ticket_changes.append(
+                    {
+                        'changed_field': change.field,
+                        'old_value': change.old,
+                        'new_value': change.new
+                    }
+                )
 
-    main_dict = {
+    final_list = [{
         "ticket_author": ticket_author,
         "comments": comment_list,
         "ticket_info": ticket_info,
         "attachments": attachment_list,
         "ticket_history": ticket_changes[:4]
-    }
-    final_list.append(main_dict)
+    }]
     # return Response(serializer.data)
     return Response(final_list)
 
 
-# @api_view(['GET'])
-# def getticketedithistory(request):
 
 @api_view(['PUT'])
 def editticketdata(request, pk):
@@ -293,11 +291,20 @@ class UploadTicketAttachment(APIView):
 
             return Response(serializer.errors)
 
+@api_view(['GET'])
+def downloadattachment(request, pk):
+    obj = Attachment.objects.get(id=pk)
+    filename = obj.file.path
+    response = FileResponse(open(filename, 'rb'))
+    response['Content-Disposition'] = f'attachment; filename={obj.file.name}'
+    return response
+
 
 @api_view(['DELETE'])
-def deleteattachment(request, pk):
-    attachment = Attachment.objects.get(id=pk)
-    attachment.delete()
+def deleteattachment(request):
+    for attachmentID in request.data:
+        attachment = Attachment.objects.get(id=attachmentID)
+        attachment.delete()
     return Response('Placeholder: attachment deleted')
 
 
@@ -367,6 +374,7 @@ def getprojectdata(request):
 @api_view(['GET'])
 def getprojectdetails(request, pk):
     project = Project.objects.get(id=pk)
+    tickets = project.tickets.all()
 
     serializer = ProjectSerializer(project)
 
@@ -388,25 +396,24 @@ def getprojectdetails(request, pk):
         )
 
     # loops over the tickets assigned to a project and adds them to the ticket list
-    for ticket in serializer.data['assigned_tickets']:
+    for ticket in tickets:
         ticket_list.append(
             {
-                'title': ticket['title'],
-                'description': ticket['description'],
-                'priority': ticket['priority'],
-                'id': ticket['id'],
-                'created_by': f"{ticket['created_by']['first_name']} {ticket['created_by']['last_name']}"
+                'title': ticket.title,
+                'description': ticket.description,
+                'priority': ticket.priority,
+                'id': ticket.id,
+                'created_by': f"{ticket.created_by.first_name} {ticket.created_by.last_name}"
             }
         )
         # ticket_list.append(ticket)
-
-    main_dict = {
+    print(ticket_list)
+    final_list = [{
 
         'assigned_users': user_list,
         'assigned_tickets': ticket_list
-    }
+    }]
 
-    final_list.append(main_dict)
     return Response(final_list)
     # return Response(serializer.data)
 

@@ -6,6 +6,7 @@ from django.utils import timezone
 from django.conf import settings
 from django.urls import reverse
 from simple_history.models import HistoricalRecords
+from projects.models import Project
 
 
 class Ticket(models.Model):
@@ -21,6 +22,7 @@ class Ticket(models.Model):
     created_on = models.CharField(max_length=20, null=True)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     priority = models.CharField(max_length=6, choices=PRIORITY_CHOICES, default='low')
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='tickets', null=True)
     history = HistoricalRecords()
 
     def __str__(self):

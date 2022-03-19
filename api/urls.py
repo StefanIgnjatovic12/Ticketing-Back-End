@@ -33,7 +33,8 @@ urlpatterns = [
     path('ticket-delete/', views.deleteticket),
 
     path('attachment-upload/', UploadTicketAttachment.as_view()),
-    path('attachment-delete/<str:pk>', views.deleteattachment),
+    path('attachment-download/<str:pk>', views.downloadattachment),
+    path('attachment-delete/', views.deleteattachment),
 
     path('projects/<str:pk>/', views.getprojectdetails),
 
