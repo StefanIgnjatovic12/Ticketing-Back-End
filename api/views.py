@@ -1,11 +1,9 @@
 from django.contrib.auth.models import User
-from rest_framework.decorators import api_view, renderer_classes
+from rest_framework.decorators import api_view
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.parsers import MultiPartParser, FormParser
-from rest_framework.response import Response
-import json
 from django.core.exceptions import ValidationError
-from rest_framework import status, generics, permissions
+from rest_framework import status, generics
 from Users.models import Role
 from projects.models import Project
 from tickets.models import Ticket, Comment, Attachment
@@ -24,8 +22,8 @@ from django.http import FileResponse
 # knox
 from knox.models import AuthToken
 from knox.views import LoginView as KnoxLoginView
-from rest_framework.authtoken.serializers import AuthTokenSerializer
-from django.contrib.auth import login
+from django.http import JsonResponse
+
 from rest_framework.authentication import BasicAuthentication
 
 # password reset
@@ -34,7 +32,7 @@ from django.dispatch import receiver
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django_rest_passwordreset.signals import reset_password_token_created
-from rest_framework.renderers import JSONRenderer
+
 
 
 # Register API
@@ -54,6 +52,16 @@ class RegisterAPI(generics.GenericAPIView):
 class LoginAPI(KnoxLoginView):
     authentication_classes = [BasicAuthentication]
 
+    def get_post_response_data(self, request, token, instance):
+        user = request.user
+        data = {
+            'expiry': self.format_expiry_datetime(instance.expiry),
+            'token': token,
+            'user': user.username
+
+        }
+
+        return data
 
 # Password reset view > need to add user and password to settings
 @receiver(reset_password_token_created)
@@ -84,6 +92,16 @@ def password_reset_token_created(sender, instance, reset_password_token, *args, 
     msg.attach_alternative(email_html_message, "text/html")
     # print(email_plaintext_message)
     msg.send()
+
+@api_view(['GET'])
+def getcurrentuser(request):
+    user = request.user
+    role = user.roles.assigned_role
+    return Response({
+        'user': user.username,
+        'role': role
+    })
+
 
 
 @api_view(['GET'])
@@ -281,7 +299,6 @@ class UploadTicketAttachment(APIView):
     def post(self, request, format=None):
 
         user = request.user
-
         serializer = AttachmentSerialiazer(data=request.data)
         if serializer.is_valid():
             serializer.validated_data['uploaded_by'] = user

@@ -19,6 +19,8 @@ urlpatterns = [
 
     path('users-update/<str:pk>/', views.edituserdata),
     path('users-delete/<str:pk>/', views.deleteuser),
+    path('users-current/', views.getcurrentuser),
+
 
     path('update-role/<str:pk>/', views.editoneroledata),
     path('update-role/', EditRoleData.as_view()),
