@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from rest_framework.decorators import api_view
+from datetime import datetime
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.parsers import MultiPartParser, FormParser
 from django.core.exceptions import ValidationError
@@ -206,7 +207,6 @@ def getticketdata(request):
 @api_view(['GET'])
 def getticketdetails(request, pk):
     ticket = Ticket.objects.get(id=pk)
-
     serializer = TicketSerializer(ticket)
 
 
@@ -226,7 +226,10 @@ def getticketdetails(request, pk):
         'title': serializer.data['title'],
         'description': serializer.data['description'],
         'created_on': serializer.data['created_on'],
-        'priority': serializer.data['priority']
+        'priority': serializer.data['priority'],
+        'update_time': serializer.data['update_time'],
+        'created_by': f"{serializer.data['created_by']['first_name']} {serializer.data['created_by']['last_name']}",
+        'parent_project': serializer.data['project']['title']
     }
 
     for comment in serializer.data['comments']:
@@ -248,6 +251,7 @@ def getticketdetails(request, pk):
             }
         )
      # loops through the history table and logs the differences/edits
+    # update_time = datetime.now().strftime("%d/%m/%Y %R")
     for current_edit in ticket.history.all()[:4]:
         previous_edit = current_edit.prev_record
         if current_edit and previous_edit is not None:
@@ -257,7 +261,9 @@ def getticketdetails(request, pk):
                     {
                         'changed_field': change.field,
                         'old_value': change.old,
-                        'new_value': change.new
+                        'new_value': change.new,
+
+
                     }
                 )
 
@@ -276,7 +282,6 @@ def getticketdetails(request, pk):
 @api_view(['PATCH'])
 def editticketdata(request, pk):
     ticket = Ticket.objects.get(id=pk)
-
     serializer = TicketSerializer(instance=ticket, data=request.data, partial=True)
     if serializer.is_valid():
         serializer.save()

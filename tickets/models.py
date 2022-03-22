@@ -23,7 +23,8 @@ class Ticket(models.Model):
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     priority = models.CharField(max_length=6, choices=PRIORITY_CHOICES, default='low')
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='tickets', null=True)
-    history = HistoricalRecords()
+    update_time =  models.CharField(max_length=100, blank=True)
+    history = HistoricalRecords(excluded_fields=['update_time'])
 
     def __str__(self):
         return self.title
