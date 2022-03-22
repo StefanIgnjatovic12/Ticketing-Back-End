@@ -57,10 +57,10 @@ class LoginAPI(KnoxLoginView):
         data = {
             'expiry': self.format_expiry_datetime(instance.expiry),
             'token': token,
-            'user': user.username
+            'user': user.username,
+            'role': user.roles.assigned_role
 
         }
-
         return data
 
 # Password reset view > need to add user and password to settings
@@ -273,16 +273,36 @@ def getticketdetails(request, pk):
 
 
 
-@api_view(['PUT'])
+@api_view(['PATCH'])
 def editticketdata(request, pk):
     ticket = Ticket.objects.get(id=pk)
-    print()
-    serializer = TicketSerializer(instance=ticket, data=request.data)
+
+    serializer = TicketSerializer(instance=ticket, data=request.data, partial=True)
     if serializer.is_valid():
         serializer.save()
 
     return Response(serializer.data)
 
+@api_view(['POST'])
+def createticket(request):
+    user = User.objects.get(username=request.user)
+    parent_project = int(request.data['parent_project'])
+    created_on = request.data['created_on']
+    title = request.data['ticket']['title']
+    description = request.data['ticket']['description']
+    priority = request.data['ticket']['priority']
+
+    print([title, description, priority, created_on, parent_project, user])
+
+    ticket = Ticket.objects.create(title=title,
+                                   description=description,
+                                   priority=priority,
+                                   created_on=created_on,
+                                   project_id=parent_project,
+                                   created_by=user
+                                   )
+
+    return Response('Create ticket request went through')
 
 @api_view(['DELETE'])
 def deleteticket(request):
@@ -299,6 +319,7 @@ class UploadTicketAttachment(APIView):
     def post(self, request, format=None):
 
         user = request.user
+
         serializer = AttachmentSerialiazer(data=request.data)
         if serializer.is_valid():
             serializer.validated_data['uploaded_by'] = user
@@ -424,7 +445,7 @@ def getprojectdetails(request, pk):
             }
         )
         # ticket_list.append(ticket)
-    print(ticket_list)
+
     final_list = [{
 
         'assigned_users': user_list,

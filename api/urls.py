@@ -31,6 +31,7 @@ urlpatterns = [
     path('comment-delete/', views.deletecomment),
 
     path('tickets/<str:pk>/', views.getticketdetails),
+    path('ticket-create/', views.createticket),
     path('ticket-update/<str:pk>/', views.editticketdata),
     path('ticket-delete/', views.deleteticket),
 
