@@ -25,6 +25,10 @@ class Ticket(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='tickets', null=True)
     update_time =  models.CharField(max_length=100, blank=True)
     history = HistoricalRecords(excluded_fields=['update_time'])
+    assigned_developer = models.ForeignKey(settings.AUTH_USER_MODEL,
+                                           on_delete=models.CASCADE,
+                                           related_name="assigned_developer",
+                                           null=True)
 
     def __str__(self):
         return self.title

@@ -20,6 +20,7 @@ urlpatterns = [
     path('users-update/<str:pk>/', views.edituserdata),
     path('users-delete/<str:pk>/', views.deleteuser),
     path('users-current/', views.getcurrentuser),
+    path('project-users/<str:pk>', views.getprojectsassignedtouser),
 
 
     path('update-role/<str:pk>/', views.editoneroledata),
@@ -40,10 +41,10 @@ urlpatterns = [
     path('attachment-delete/', views.deleteattachment),
 
     path('projects/<str:pk>/', views.getprojectdetails),
-
     path('project-update/<str:pk>/', views.editprojectdata),
     path('project-delete/', views.deleteproject),
 
     path('assigned-user-delete/projects/<str:projectId>/', views.deleteassigneduser),
+    path('assigned-user-add/projects/', views.addassigneduser),
 
 ]

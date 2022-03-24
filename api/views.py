@@ -15,6 +15,7 @@ from .serializers import (AttachmentSerialiazer,
                           CommentSerializer,
                           ProjectSerializer,
                           RegisterSerializer,
+                          SimpleTicketSerializer
 
                           )
 from rest_framework.views import APIView
@@ -33,7 +34,6 @@ from django.dispatch import receiver
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django_rest_passwordreset.signals import reset_password_token_created
-
 
 
 # Register API
@@ -63,6 +63,7 @@ class LoginAPI(KnoxLoginView):
 
         }
         return data
+
 
 # Password reset view > need to add user and password to settings
 @receiver(reset_password_token_created)
@@ -94,6 +95,7 @@ def password_reset_token_created(sender, instance, reset_password_token, *args, 
     # print(email_plaintext_message)
     msg.send()
 
+
 @api_view(['GET'])
 def getcurrentuser(request):
     user = request.user
@@ -102,7 +104,6 @@ def getcurrentuser(request):
         'user': user.username,
         'role': role
     })
-
 
 
 @api_view(['GET'])
@@ -209,7 +210,6 @@ def getticketdetails(request, pk):
     ticket = Ticket.objects.get(id=pk)
     serializer = TicketSerializer(ticket)
 
-
     comment_list = []
     attachment_list = []
     ticket_changes = []
@@ -250,7 +250,7 @@ def getticketdetails(request, pk):
                 'id': attachment['id']
             }
         )
-     # loops through the history table and logs the differences/edits
+    # loops through the history table and logs the differences/edits
     # update_time = datetime.now().strftime("%d/%m/%Y %R")
     for current_edit in ticket.history.all()[:4]:
         previous_edit = current_edit.prev_record
@@ -262,7 +262,6 @@ def getticketdetails(request, pk):
                         'changed_field': change.field,
                         'old_value': change.old,
                         'new_value': change.new,
-
 
                     }
                 )
@@ -278,7 +277,6 @@ def getticketdetails(request, pk):
     return Response(final_list)
 
 
-
 @api_view(['PATCH'])
 def editticketdata(request, pk):
     ticket = Ticket.objects.get(id=pk)
@@ -287,6 +285,7 @@ def editticketdata(request, pk):
         serializer.save()
 
     return Response(serializer.data)
+
 
 @api_view(['POST'])
 def createticket(request):
@@ -308,6 +307,7 @@ def createticket(request):
                                    )
 
     return Response('Create ticket request went through')
+
 
 @api_view(['DELETE'])
 def deleteticket(request):
@@ -333,6 +333,7 @@ class UploadTicketAttachment(APIView):
         else:
 
             return Response(serializer.errors)
+
 
 @api_view(['GET'])
 def downloadattachment(request, pk):
@@ -461,6 +462,28 @@ def getprojectdetails(request, pk):
     # return Response(serializer.data)
 
 
+@api_view(['GET'])
+def getprojectsassignedtouser(request, pk):
+    user = User.objects.get(id=pk)
+    # get list of projects to which the user is assigned
+    project_list = user.assigned_users.all()
+    project_ticket_dict = {}
+    # Loop through list of projects
+    for project in project_list:
+        # Get tickets assigned to each project
+        assigned_tickets = project.tickets.all()
+        ticket_titles = []
+        # loop through tickets assigned to the project
+        for ticket in assigned_tickets:
+            # serialize each ticket and get its title in a dictionary
+            serialized = SimpleTicketSerializer(instance=ticket).data
+            # append only the title string to the list
+            ticket_titles.append(serialized['title'])
+        # add project and it's corresponding tickets to dictionary
+        project_ticket_dict[f'{str(project)}'] = ticket_titles
+    return Response(project_ticket_dict)
+
+
 @api_view(['POST'])
 def editprojectdata(request, pk):
     project = Project.objects.get(id=pk)
@@ -482,10 +505,21 @@ def deleteproject(request):
 def deleteassigneduser(request, projectId):
     # get Project
     project = Project.objects.get(id=projectId)
-
+    print(request.data)
     # receive a list of user IDs from front end, loop through them
     for userID in request.data:
         user = project.assigned_users.get(id=userID)
         project.assigned_users.remove(user)
 
     return Response('User removed from project')
+
+@api_view(['POST'])
+def addassigneduser(request):
+    data = request.data
+    project = Project.objects.get(title=data['project'])
+    user_id_list = data['user']
+    # print(user_id_list)
+    for id in user_id_list:
+        user = User.objects.get(id=id)
+        project.assigned_users.add(user)
+    return Response('User added to project')
