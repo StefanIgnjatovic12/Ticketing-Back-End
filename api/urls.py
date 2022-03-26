@@ -45,6 +45,7 @@ urlpatterns = [
     path('project-delete/', views.deleteproject),
 
     path('assigned-user-delete/projects/<str:projectId>/', views.deleteassigneduser),
-    path('assigned-user-add/projects/', views.addassigneduser),
+    path('assigned-user-add/projects/', views.assignusertoproject),
+    path('assigned-user-add/tickets/', views.assignusertoticket),
 
 ]

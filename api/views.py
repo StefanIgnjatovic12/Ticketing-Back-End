@@ -308,6 +308,16 @@ def createticket(request):
 
     return Response('Create ticket request went through')
 
+@api_view(['POST'])
+def assignusertoticket(request):
+    data = request.data
+    print(data)
+    # ticket = Ticket.objects.get(titl=data['ticket'])
+    # user_id = data['user']
+    # user = User.objects.get(id=id)
+    # ticket.assigned_developer.add(user)
+    return Response('User assigned to ticket')
+
 
 @api_view(['DELETE'])
 def deleteticket(request):
@@ -468,6 +478,7 @@ def getprojectsassignedtouser(request, pk):
     # get list of projects to which the user is assigned
     project_list = user.assigned_users.all()
     project_ticket_dict = {}
+    project_ticket_list = []
     # Loop through list of projects
     for project in project_list:
         # Get tickets assigned to each project
@@ -479,9 +490,17 @@ def getprojectsassignedtouser(request, pk):
             serialized = SimpleTicketSerializer(instance=ticket).data
             # append only the title string to the list
             ticket_titles.append(serialized['title'])
+
         # add project and it's corresponding tickets to dictionary
-        project_ticket_dict[f'{str(project)}'] = ticket_titles
-    return Response(project_ticket_dict)
+        project_ticket_list.append(
+            {
+                'project': str(project),
+                'tickets': ticket_titles
+                # f'{str(project)}' : ticket_titles
+            }
+        )
+
+    return Response(project_ticket_list)
 
 
 @api_view(['POST'])
@@ -514,7 +533,7 @@ def deleteassigneduser(request, projectId):
     return Response('User removed from project')
 
 @api_view(['POST'])
-def addassigneduser(request):
+def assignusertoproject(request):
     data = request.data
     project = Project.objects.get(title=data['project'])
     user_id_list = data['user']
