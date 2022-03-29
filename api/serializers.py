@@ -16,10 +16,28 @@ class RoleSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     roles = RoleSerializer(read_only=True, many=False)
+    # assigned_tickets = serializers.SerializerMethodField(method_name='get_assigned_tickets')
+    # assigned_projects = serializers.SerializerMethodField(method_name='get_assigned_projects')
 
     class Meta:
         model = User
         fields = '__all__'
+
+    # def get_assigned_tickets(self, obj):
+    #     print(obj.assigned_developer.all())
+
+        # for ticket_list in obj.assigned_developer.all():
+        #     for ticket in ticket_list:
+        #         print(ticket)
+        #         if ticket is not None:
+        #             serialized = SimpleTicketSerializer(ticket)
+        #             # print(serialized.data)
+        #     # print(serialized.data)
+        #             return (serialized.data)
+
+    # def get_assigned_projects(self, obj):
+    #     return ProjectSerializer(obj.assigned_users.all()).data
+
 
 # Register Serializer
 class RegisterSerializer(serializers.ModelSerializer):
@@ -67,7 +85,7 @@ class TicketSerializer(serializers.ModelSerializer):
     comments = CommentSerializer(read_only=True, many=True)
     attachment = AttachmentSerialiazer(read_only=True, many=True)
     project = ProjectSerializer(read_only=True, many=False)
-
+    assigned_developer = UserSerializer(read_only=True, many=False)
     class Meta:
         model = Ticket
         fields = '__all__'

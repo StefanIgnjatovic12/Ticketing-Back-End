@@ -24,8 +24,8 @@ class Ticket(models.Model):
     priority = models.CharField(max_length=6, choices=PRIORITY_CHOICES, default='low')
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='tickets', null=True)
     update_time =  models.CharField(max_length=100, blank=True)
-    history = HistoricalRecords(excluded_fields=['update_time'])
-    assigned_developer = models.ForeignKey(settings.AUTH_USER_MODEL,
+    history = HistoricalRecords(excluded_fields=['update_time', 'assigned_developer'])
+    assigned_developer = models.ForeignKey(User,
                                            on_delete=models.CASCADE,
                                            related_name="assigned_developer",
                                            null=True)

@@ -11,7 +11,7 @@ class Project(models.Model):
     created_on = models.CharField(max_length=20, null=True)
     # https://stackoverflow.com/questions/34305805/foreignkey-user-in-models
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='created_by')
-    assigned_users = models.ManyToManyField(User, related_name='assigned_users')
+    assigned_users = models.ManyToManyField(User, related_name='assigned_users', blank=True)
 
     def __str__(self):
         return self.title

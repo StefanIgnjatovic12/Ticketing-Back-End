@@ -50,8 +50,13 @@ class RegisterAPI(generics.GenericAPIView):
         })
 
 
+# prevents the basic auth popup on incorrect login info
+class BasicLikeAuthentication(BasicAuthentication):
+    def authenticate_header(self, request):
+        return f'BasicLike realm="{self.www_authenticate_realm}"'
+
 class LoginAPI(KnoxLoginView):
-    authentication_classes = [BasicAuthentication]
+    authentication_classes = [BasicLikeAuthentication]
 
     def get_post_response_data(self, request, token, instance):
         user = request.user
@@ -97,7 +102,7 @@ def password_reset_token_created(sender, instance, reset_password_token, *args, 
 
 
 @api_view(['GET'])
-def getcurrentuser(request):
+def get_current_user(request):
     user = request.user
     role = user.roles.assigned_role
     return Response({
@@ -107,17 +112,18 @@ def getcurrentuser(request):
 
 
 @api_view(['GET'])
-def getuserdata(request):
-    items = User.objects.all()
+def get_user_data(request):
+    users = User.objects.all()
 
     # enabling pagination because api_view doesn't have it by default
     paginator = LimitOffsetPagination()
-    result_page = paginator.paginate_queryset(items, request)
+    result_page = paginator.paginate_queryset(users, request)
 
     # creating 1 serializer instance for paginated and 1 for full
     serializer_page = UserSerializer(result_page, many=True)
-    serializer_full = UserSerializer(items, many=True)
-
+    serializer_full = UserSerializer(users, many=True)
+    # for user in users:
+    #     print(user.assigned_developer.all())
     # if limit is not specified, return all object data
     if 'limit' not in request.query_params:
         return Response(serializer_full.data)
@@ -126,7 +132,7 @@ def getuserdata(request):
 
 
 @api_view(['POST'])
-def edituserdata(request, pk):
+def edit_user_data(request, pk):
     user = User.objects.get(id=pk)
     serializer = UserSerializer(instance=user, data=request.data)
     if serializer.is_valid():
@@ -135,7 +141,7 @@ def edituserdata(request, pk):
 
 
 @api_view(['DELETE'])
-def deleteuser(request, pk):
+def delete_user(request, pk):
     user = User.objects.get(id=pk)
     user.delete()
     return Response('Placeholder: user deleted')
@@ -147,7 +153,7 @@ def deleteuser(request, pk):
 
 
 @api_view(['GET'])
-def getroledata(request):
+def get_role_data(request):
     items = Role.objects.all()
     serializer = RoleSerializer(items, many=True)
     return Response(serializer.data)
@@ -155,7 +161,7 @@ def getroledata(request):
 
 # Update 1 role for 1 person
 @api_view(['PUT'])
-def editoneroledata(request, pk):
+def edit_one_role_data(request, pk):
     role = Role.objects.get(user_id=pk)
     serializer = RoleSerializer(instance=role, data=request.data)
     if serializer.is_valid():
@@ -199,14 +205,14 @@ class EditRoleData(APIView):
 
 # Ticket object
 @api_view(['GET'])
-def getticketdata(request):
+def get_all_tickets(request):
     items = Ticket.objects.all()
     serializer = TicketSerializer(items, many=True)
     return Response(serializer.data)
 
 
 @api_view(['GET'])
-def getticketdetails(request, pk):
+def get_ticket_details(request, pk):
     ticket = Ticket.objects.get(id=pk)
     serializer = TicketSerializer(ticket)
 
@@ -278,7 +284,7 @@ def getticketdetails(request, pk):
 
 
 @api_view(['PATCH'])
-def editticketdata(request, pk):
+def edit_ticket_data(request, pk):
     ticket = Ticket.objects.get(id=pk)
     serializer = TicketSerializer(instance=ticket, data=request.data, partial=True)
     if serializer.is_valid():
@@ -288,7 +294,7 @@ def editticketdata(request, pk):
 
 
 @api_view(['POST'])
-def createticket(request):
+def create_ticket(request):
     user = User.objects.get(username=request.user)
     parent_project = int(request.data['parent_project'])
     created_on = request.data['created_on']
@@ -309,18 +315,21 @@ def createticket(request):
     return Response('Create ticket request went through')
 
 @api_view(['POST'])
-def assignusertoticket(request):
+def assign_user_to_ticket(request):
     data = request.data
-    print(data)
-    # ticket = Ticket.objects.get(titl=data['ticket'])
-    # user_id = data['user']
-    # user = User.objects.get(id=id)
-    # ticket.assigned_developer.add(user)
+
+    ticket = Ticket.objects.get(title=data['ticket'])
+    user_id = data['user']
+    user = User.objects.get(id=user_id[0])
+    if ticket.assigned_developer == user:
+        return Response ('Ticket already assigned to user')
+    ticket.assigned_developer = user
+    ticket.save()
     return Response('User assigned to ticket')
 
 
 @api_view(['DELETE'])
-def deleteticket(request):
+def delete_ticket(request):
     for ticketID in request.data:
         ticket = Ticket.objects.get(id=ticketID)
         ticket.delete()
@@ -346,7 +355,7 @@ class UploadTicketAttachment(APIView):
 
 
 @api_view(['GET'])
-def downloadattachment(request, pk):
+def download_attachment(request, pk):
     obj = Attachment.objects.get(id=pk)
     filename = obj.file.path
     response = FileResponse(open(filename, 'rb'))
@@ -355,7 +364,7 @@ def downloadattachment(request, pk):
 
 
 @api_view(['DELETE'])
-def deleteattachment(request):
+def delete_attachment(request):
     for attachmentID in request.data:
         attachment = Attachment.objects.get(id=attachmentID)
         attachment.delete()
@@ -367,14 +376,14 @@ def deleteattachment(request):
 
 # Comment object
 @api_view(['GET'])
-def getcommentdata(request):
+def get_comment_data(request):
     items = Comment.objects.all()
     serializer = CommentSerializer(items, many=True)
     return Response(serializer.data)
 
 
 @api_view(['POST'])
-def editcommentdata(request, pk):
+def edit_comment_data(request, pk):
     comment = Comment.objects.get(id=pk)
 
     serializer = CommentSerializer(instance=comment, data=request.data)
@@ -384,7 +393,7 @@ def editcommentdata(request, pk):
 
 
 @api_view(['DELETE'])
-def deletecomment(request):
+def delete_comment(request):
     for id in request.data:
         comment = Comment.objects.get(id=id)
         comment.delete()
@@ -392,7 +401,7 @@ def deletecomment(request):
 
 
 @api_view(['POST'])
-def createcomment(request):
+def create_comment(request):
     user = User.objects.get(username=request.user)
     parent_ticket = Ticket.objects.get(id=int(request.data['parent_ticket']))
     content = request.data['comment']
@@ -410,7 +419,7 @@ def createcomment(request):
 # Project object
 
 @api_view(['GET'])
-def getprojectdata(request):
+def get_project_data(request):
     items = Project.objects.all()
 
     paginator = LimitOffsetPagination()
@@ -426,7 +435,7 @@ def getprojectdata(request):
 
 
 @api_view(['GET'])
-def getprojectdetails(request, pk):
+def get_project_details(request, pk):
     project = Project.objects.get(id=pk)
     tickets = project.tickets.all()
 
@@ -473,7 +482,7 @@ def getprojectdetails(request, pk):
 
 
 @api_view(['GET'])
-def getprojectsassignedtouser(request, pk):
+def get_projects_assigned_to_user(request, pk):
     user = User.objects.get(id=pk)
     # get list of projects to which the user is assigned
     project_list = user.assigned_users.all()
@@ -504,7 +513,7 @@ def getprojectsassignedtouser(request, pk):
 
 
 @api_view(['POST'])
-def editprojectdata(request, pk):
+def edit_project_data(request, pk):
     project = Project.objects.get(id=pk)
     serializer = ProjectSerializer(instance=project, data=request.data)
     if serializer.is_valid():
@@ -513,7 +522,7 @@ def editprojectdata(request, pk):
 
 
 @api_view(['DELETE'])
-def deleteproject(request):
+def delete_project(request):
     for projectID in request.data:
         project = Project.objects.get(id=projectID)
         project.delete()
@@ -521,7 +530,7 @@ def deleteproject(request):
 
 
 @api_view(['DELETE'])
-def deleteassigneduser(request, projectId):
+def remove_user_from_project(request, projectId):
     # get Project
     project = Project.objects.get(id=projectId)
     print(request.data)
@@ -533,12 +542,15 @@ def deleteassigneduser(request, projectId):
     return Response('User removed from project')
 
 @api_view(['POST'])
-def assignusertoproject(request):
+def assign_user_to_project(request):
     data = request.data
     project = Project.objects.get(title=data['project'])
     user_id_list = data['user']
     # print(user_id_list)
     for id in user_id_list:
         user = User.objects.get(id=id)
+        if user in project.assigned_users.all():
+            print('assigned')
+            return Response('User already assigned to project')
         project.assigned_users.add(user)
     return Response('User added to project')
