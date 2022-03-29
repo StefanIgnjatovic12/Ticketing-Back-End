@@ -533,7 +533,6 @@ def delete_project(request):
 def remove_user_from_project(request, projectId):
     # get Project
     project = Project.objects.get(id=projectId)
-    print(request.data)
     # receive a list of user IDs from front end, loop through them
     for userID in request.data:
         user = project.assigned_users.get(id=userID)
@@ -546,11 +545,9 @@ def assign_user_to_project(request):
     data = request.data
     project = Project.objects.get(title=data['project'])
     user_id_list = data['user']
-    # print(user_id_list)
     for id in user_id_list:
         user = User.objects.get(id=id)
         if user in project.assigned_users.all():
-            print('assigned')
             return Response('User already assigned to project')
         project.assigned_users.add(user)
     return Response('User added to project')

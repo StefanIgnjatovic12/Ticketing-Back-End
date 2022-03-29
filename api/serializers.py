@@ -16,27 +16,35 @@ class RoleSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     roles = RoleSerializer(read_only=True, many=False)
-    # assigned_tickets = serializers.SerializerMethodField(method_name='get_assigned_tickets')
-    # assigned_projects = serializers.SerializerMethodField(method_name='get_assigned_projects')
+    assigned_tickets = serializers.SerializerMethodField(method_name='get_assigned_tickets')
+    assigned_projects = serializers.SerializerMethodField(method_name='get_assigned_projects')
 
     class Meta:
         model = User
         fields = '__all__'
 
-    # def get_assigned_tickets(self, obj):
-    #     print(obj.assigned_developer.all())
+    # methods to return the projects and tickets assigned to each user in the users endpoint
 
-        # for ticket_list in obj.assigned_developer.all():
-        #     for ticket in ticket_list:
-        #         print(ticket)
-        #         if ticket is not None:
-        #             serialized = SimpleTicketSerializer(ticket)
-        #             # print(serialized.data)
-        #     # print(serialized.data)
-        #             return (serialized.data)
+    def get_assigned_tickets(self, obj):
+        # all query sets containing tickets grouped on which user they're assigned to
+        all_query_sets = Ticket.objects.filter(assigned_developer=obj)
+        final_ticket_list = []
+        # if query set isn't empty
+        if all_query_sets:
+            # each query set can contain multiple tickets
+            for tickets in all_query_sets:
+                final_ticket_list.append(tickets.title)
+        if len(final_ticket_list) > 0:
+            return(final_ticket_list)
 
-    # def get_assigned_projects(self, obj):
-    #     return ProjectSerializer(obj.assigned_users.all()).data
+    def get_assigned_projects(self, obj):
+        all_query_sets = obj.assigned_users.all()
+        final_project_list = []
+        if all_query_sets:
+            for project in all_query_sets:
+                final_project_list.append(project.title)
+        if len(final_project_list) > 0:
+            return(final_project_list)
 
 
 # Register Serializer
