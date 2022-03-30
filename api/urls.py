@@ -22,10 +22,8 @@ urlpatterns = [
     path('users-current/', views.get_current_user),
     path('project-users/<str:pk>', views.get_projects_assigned_to_user),
 
-
     path('update-role/<str:pk>/', views.edit_one_role_data),
     path('update-role/', EditRoleData.as_view()),
-
 
     path('comment-create/', views.create_comment),
     path('comment-update/<str:pk>/', views.edit_comment_data),
@@ -41,6 +39,7 @@ urlpatterns = [
     path('attachment-delete/', views.delete_attachment),
 
     path('projects/<str:pk>/', views.get_project_details),
+    path('project-create/', views.create_project),
     path('project-update/<str:pk>/', views.edit_project_data),
     path('project-delete/', views.delete_project),
 

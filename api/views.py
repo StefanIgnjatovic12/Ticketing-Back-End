@@ -215,10 +215,10 @@ def get_all_tickets(request):
 def get_ticket_details(request, pk):
     ticket = Ticket.objects.get(id=pk)
     serializer = TicketSerializer(ticket)
-
     comment_list = []
     attachment_list = []
     ticket_changes = []
+    assigned_developer = f"{serializer.data['assigned_developer']['first_name']} {serializer.data['assigned_developer']['last_name']}"
 
     ticket_author = {
         'user_id': serializer.data['id'],
@@ -235,7 +235,8 @@ def get_ticket_details(request, pk):
         'priority': serializer.data['priority'],
         'update_time': serializer.data['update_time'],
         'created_by': f"{serializer.data['created_by']['first_name']} {serializer.data['created_by']['last_name']}",
-        'parent_project': serializer.data['project']['title']
+        'parent_project': serializer.data['project']['title'],
+        'assigned_developer': assigned_developer
     }
 
     for comment in serializer.data['comments']:
@@ -277,7 +278,9 @@ def get_ticket_details(request, pk):
         "comments": comment_list,
         "ticket_info": ticket_info,
         "attachments": attachment_list,
-        "ticket_history": ticket_changes[:4]
+        "ticket_history": ticket_changes[:4],
+
+
     }]
     # return Response(serializer.data)
     return Response(final_list)
@@ -301,8 +304,6 @@ def create_ticket(request):
     title = request.data['ticket']['title']
     description = request.data['ticket']['description']
     priority = request.data['ticket']['priority']
-
-    print([title, description, priority, created_on, parent_project, user])
 
     ticket = Ticket.objects.create(title=title,
                                    description=description,
@@ -551,3 +552,18 @@ def assign_user_to_project(request):
             return Response('User already assigned to project')
         project.assigned_users.add(user)
     return Response('User added to project')
+
+@api_view(['POST'])
+def create_project(request):
+    user = User.objects.get(username=request.user)
+    title = request.data['project']['title']
+    description = request.data['project']['description']
+    created_on = request.data['created_on']
+    users_to_assign_list = request.data['selected_users']
+    project = Project.objects.create(title=title,
+                                     description=description,
+                                     created_on=created_on,
+                                     created_by=user)
+
+    project.assigned_users.set(users_to_assign_list)
+    return Response('Project created')
