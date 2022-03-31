@@ -55,6 +55,7 @@ class BasicLikeAuthentication(BasicAuthentication):
     def authenticate_header(self, request):
         return f'BasicLike realm="{self.www_authenticate_realm}"'
 
+
 class LoginAPI(KnoxLoginView):
     authentication_classes = [BasicLikeAuthentication]
 
@@ -105,10 +106,11 @@ def password_reset_token_created(sender, instance, reset_password_token, *args, 
 def get_current_user(request):
     user = request.user
     role = user.roles.assigned_role
-    return Response({
+    return Response([{
         'user': user.username,
-        'role': role
-    })
+        'role': role,
+        'id': user.id
+    }])
 
 
 @api_view(['GET'])
@@ -218,8 +220,10 @@ def get_ticket_details(request, pk):
     comment_list = []
     attachment_list = []
     ticket_changes = []
-    assigned_developer = f"{serializer.data['assigned_developer']['first_name']} {serializer.data['assigned_developer']['last_name']}"
-
+    if serializer.data['assigned_developer'] is not None:
+        assigned_developer = f"{serializer.data['assigned_developer']['first_name']} {serializer.data['assigned_developer']['last_name']}"
+    else:
+        assigned_developer = 'Unassigned'
     ticket_author = {
         'user_id': serializer.data['id'],
         'username': serializer.data['created_by']['username'],
@@ -236,7 +240,9 @@ def get_ticket_details(request, pk):
         'update_time': serializer.data['update_time'],
         'created_by': f"{serializer.data['created_by']['first_name']} {serializer.data['created_by']['last_name']}",
         'parent_project': serializer.data['project']['title'],
-        'assigned_developer': assigned_developer
+        'assigned_developer': assigned_developer,
+        'status': serializer.data['status'],
+        'type': serializer.data['type']
     }
 
     for comment in serializer.data['comments']:
@@ -280,10 +286,45 @@ def get_ticket_details(request, pk):
         "attachments": attachment_list,
         "ticket_history": ticket_changes[:4],
 
-
     }]
     # return Response(serializer.data)
     return Response(final_list)
+
+# used for individual user dashboards
+@api_view(['GET'])
+def get_tickets_and_projects_assigned_to_user(request, pk):
+    user = User.objects.get(id=pk)
+    ticket_query_set = user.assigned_developer.all()
+    project_query_set = user.assigned_users.all()
+    ticket_list = []
+    project_list = []
+    for ticket in ticket_query_set:
+        serialized = TicketSerializer(ticket).data
+        ticket_dict = {
+            "title": serialized['title'],
+            "description": serialized['description'],
+            "created_by": f"{serialized['created_by']['first_name']} {serialized['created_by']['last_name']}",
+            "created_on": serialized['created_on'],
+            "priority": serialized['priority'],
+            "type": serialized['type'],
+            "id": serialized['id']
+        }
+        ticket_list.append(ticket_dict)
+    for project in project_query_set:
+        serialized = ProjectSerializer(project).data
+        project_dict = {
+            "title": serialized['title'],
+            "description": serialized['description'],
+            "created_by": f"{serialized['created_by']['first_name']} {serialized['created_by']['last_name']}",
+            "created_on": serialized['created_on'],
+            "id": serialized['id']
+        }
+        project_list.append(project_dict)
+    final_dict = {
+        "projects": project_list,
+        "tickets": ticket_list
+    }
+    return Response([final_dict])
 
 
 @api_view(['PATCH'])
@@ -304,16 +345,19 @@ def create_ticket(request):
     title = request.data['ticket']['title']
     description = request.data['ticket']['description']
     priority = request.data['ticket']['priority']
+    type = request.data['ticket']['type']
 
     ticket = Ticket.objects.create(title=title,
                                    description=description,
                                    priority=priority,
                                    created_on=created_on,
                                    project_id=parent_project,
-                                   created_by=user
+                                   created_by=user,
+                                   type=type
                                    )
 
     return Response('Create ticket request went through')
+
 
 @api_view(['POST'])
 def assign_user_to_ticket(request):
@@ -323,8 +367,9 @@ def assign_user_to_ticket(request):
     user_id = data['user']
     user = User.objects.get(id=user_id[0])
     if ticket.assigned_developer == user:
-        return Response ('Ticket already assigned to user')
+        return Response('Ticket already assigned to user')
     ticket.assigned_developer = user
+    ticket.status = 'Assigned/In progress'
     ticket.save()
     return Response('User assigned to ticket')
 
@@ -467,7 +512,9 @@ def get_project_details(request, pk):
                 'description': ticket.description,
                 'priority': ticket.priority,
                 'id': ticket.id,
-                'created_by': f"{ticket.created_by.first_name} {ticket.created_by.last_name}"
+                'created_by': f"{ticket.created_by.first_name} {ticket.created_by.last_name}",
+                # 'type': ticket.type,
+                # 'status': ticket.status
             }
         )
         # ticket_list.append(ticket)
@@ -487,7 +534,6 @@ def get_projects_assigned_to_user(request, pk):
     user = User.objects.get(id=pk)
     # get list of projects to which the user is assigned
     project_list = user.assigned_users.all()
-    project_ticket_dict = {}
     project_ticket_list = []
     # Loop through list of projects
     for project in project_list:
@@ -541,6 +587,7 @@ def remove_user_from_project(request, projectId):
 
     return Response('User removed from project')
 
+
 @api_view(['POST'])
 def assign_user_to_project(request):
     data = request.data
@@ -552,6 +599,7 @@ def assign_user_to_project(request):
             return Response('User already assigned to project')
         project.assigned_users.add(user)
     return Response('User added to project')
+
 
 @api_view(['POST'])
 def create_project(request):

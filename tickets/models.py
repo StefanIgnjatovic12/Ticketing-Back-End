@@ -17,11 +17,25 @@ class Ticket(models.Model):
         ('Low', 'Low')
     ]
 
+    TICKET_TYPE_CHOICES = [
+        ('Bug report', 'Bug report'),
+        ('Feature request', 'Feature request'),
+        ('Not specified', 'Not specified'),
+        ('Other', 'Other')
+    ]
+
+    TICKET_STATUS = [
+        ('Unassigned', 'Unassigned'),
+        ('Assigned/In progress', 'Assigned/In progress'),
+        ('Resolved', 'Resolved'),
+    ]
     title = models.CharField(max_length=100, blank=True)
     description = models.TextField(default='', blank=True)
     created_on = models.CharField(max_length=20, null=True)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     priority = models.CharField(max_length=6, choices=PRIORITY_CHOICES, default='low')
+    type = models.CharField(max_length=50, choices=TICKET_TYPE_CHOICES, default='Not specified')
+    status = models.CharField(max_length=50, choices=TICKET_STATUS, default='Unassigned', blank=True)
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='tickets', null=True)
     update_time =  models.CharField(max_length=100, blank=True)
     history = HistoricalRecords(excluded_fields=['update_time', 'assigned_developer'])

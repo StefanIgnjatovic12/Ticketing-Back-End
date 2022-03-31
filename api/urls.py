@@ -21,6 +21,7 @@ urlpatterns = [
     path('users-delete/<str:pk>/', views.delete_user),
     path('users-current/', views.get_current_user),
     path('project-users/<str:pk>', views.get_projects_assigned_to_user),
+    path('users-tickets-projects/<str:pk>/', views.get_tickets_and_projects_assigned_to_user),
 
     path('update-role/<str:pk>/', views.edit_one_role_data),
     path('update-role/', EditRoleData.as_view()),
