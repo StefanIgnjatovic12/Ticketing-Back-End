@@ -48,4 +48,7 @@ urlpatterns = [
     path('assigned-user-add/projects/', views.assign_user_to_project),
     path('assigned-user-add/tickets/', views.assign_user_to_ticket),
 
+    path('dev-ticket-breakdown/<str:pk>/', views.get_ticket_count_for_user),
+    path('all-ticket-breakdown/', views.get_ticket_count_all)
+
 ]

@@ -326,6 +326,85 @@ def get_tickets_and_projects_assigned_to_user(request, pk):
     }
     return Response([final_dict])
 
+@api_view(['GET'])
+# view to show number of tickets by type, priority and status on home page for dev
+def get_ticket_count_for_user(request, pk):
+    ticket_type_choices = ['Bug report', 'Feature request', 'Not specified', 'Other']
+    ticket_priority_choices = ['Urgent', 'High', 'Medium', 'Low']
+    ticket_status_choices = ['Assigned/In progress', 'Resolved']
+
+    user = User.objects.get(id=pk)
+    ticket_query_set = user.assigned_developer.all()
+    ticket_type_list = []
+    ticket_priority_list = []
+    ticket_status_list = []
+
+    ticket_type_dict = {}
+    ticket_priority_dict = {}
+    ticket_status_dict = {}
+
+
+    for ticket in ticket_query_set:
+        serialized = TicketSerializer(ticket).data
+        ticket_type_list.append(serialized['type'])
+        ticket_status_list.append(serialized['status'])
+        ticket_priority_list.append(serialized['priority'])
+
+    for choice in ticket_type_choices:
+        ticket_type_dict[choice] = ticket_type_list.count(choice)
+
+    for choice in ticket_priority_choices:
+        ticket_priority_dict[choice] = ticket_priority_list.count(choice)
+
+    for choice in ticket_status_choices:
+        ticket_status_dict[choice] = ticket_status_list.count(choice)
+
+    final_dict = {
+        'tickets_by_type': ticket_type_dict,
+        'tickets_by_priority': ticket_priority_dict,
+        'tickets_by_status': ticket_status_dict
+    }
+    return Response (final_dict)
+
+@api_view(['GET'])
+# view to show number of tickets by type, priority and status on home page for dev
+def get_ticket_count_all(request):
+    ticket_type_choices = ['Bug report', 'Feature request', 'Not specified', 'Other']
+    ticket_priority_choices = ['Urgent', 'High', 'Medium', 'Low']
+    ticket_status_choices = ['Assigned/In progress', 'Resolved']
+
+    ticket_query_set = Ticket.objects.all()
+    ticket_type_list = []
+    ticket_priority_list = []
+    ticket_status_list = []
+
+    ticket_type_dict = {}
+    ticket_priority_dict = {}
+    ticket_status_dict = {}
+
+
+    for ticket in ticket_query_set:
+        serialized = TicketSerializer(ticket).data
+        ticket_type_list.append(serialized['type'])
+        ticket_status_list.append(serialized['status'])
+        ticket_priority_list.append(serialized['priority'])
+        print(serialized['status'])
+
+    for choice in ticket_type_choices:
+        ticket_type_dict[choice] = ticket_type_list.count(choice)
+
+    for choice in ticket_priority_choices:
+        ticket_priority_dict[choice] = ticket_priority_list.count(choice)
+
+    for choice in ticket_status_choices:
+        ticket_status_dict[choice] = ticket_status_list.count(choice)
+
+    final_dict = {
+        'tickets_by_type': ticket_type_dict,
+        'tickets_by_priority': ticket_priority_dict,
+        'tickets_by_status': ticket_status_dict
+    }
+    return Response (final_dict)
 
 @api_view(['PATCH'])
 def edit_ticket_data(request, pk):
@@ -371,6 +450,7 @@ def assign_user_to_ticket(request):
     ticket.assigned_developer = user
     ticket.status = 'Assigned/In progress'
     ticket.save()
+    print(ticket)
     return Response('User assigned to ticket')
 
 
@@ -487,9 +567,17 @@ def get_project_details(request, pk):
 
     serializer = ProjectSerializer(project)
 
+    project_info = {
+        'title': serializer.data['title'],
+        'description': serializer.data['description'],
+        'created_by': f"{serializer.data['created_by']['first_name']} {serializer.data['created_by']['last_name']}",
+        'created_on': serializer.data['created_on'],
+        'id': serializer.data['id']
+
+    }
+
     user_list = []
     ticket_list = []
-    final_list = []
 
     # loops over users assigned to project and adds 1 dictionary per user to the user_list
     for user in serializer.data['assigned_users']:
@@ -522,7 +610,8 @@ def get_project_details(request, pk):
     final_list = [{
 
         'assigned_users': user_list,
-        'assigned_tickets': ticket_list
+        'assigned_tickets': ticket_list,
+        'project_info': project_info
     }]
 
     return Response(final_list)
@@ -559,10 +648,10 @@ def get_projects_assigned_to_user(request, pk):
     return Response(project_ticket_list)
 
 
-@api_view(['POST'])
+@api_view(['PATCH'])
 def edit_project_data(request, pk):
     project = Project.objects.get(id=pk)
-    serializer = ProjectSerializer(instance=project, data=request.data)
+    serializer = ProjectSerializer(instance=project, data=request.data, partial=True)
     if serializer.is_valid():
         serializer.save()
     return Response(serializer.data)
