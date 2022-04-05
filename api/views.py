@@ -294,8 +294,15 @@ def get_ticket_details(request, pk):
 @api_view(['GET'])
 def get_tickets_and_projects_assigned_to_user(request, pk):
     user = User.objects.get(id=pk)
-    ticket_query_set = user.assigned_developer.all()
+
+    if user.roles.assigned_role =='Admin' or user.roles.assigned_role == 'Developer':
+        ticket_query_set = user.assigned_developer.all()
+
+    elif user.roles.assigned_role == 'User':
+        ticket_query_set = Ticket.objects.filter(created_by=user)
+
     project_query_set = user.assigned_users.all()
+
     ticket_list = []
     project_list = []
     for ticket in ticket_query_set:
@@ -388,7 +395,6 @@ def get_ticket_count_all(request):
         ticket_type_list.append(serialized['type'])
         ticket_status_list.append(serialized['status'])
         ticket_priority_list.append(serialized['priority'])
-        print(serialized['status'])
 
     for choice in ticket_type_choices:
         ticket_type_dict[choice] = ticket_type_list.count(choice)
@@ -419,6 +425,7 @@ def edit_ticket_data(request, pk):
 @api_view(['POST'])
 def create_ticket(request):
     user = User.objects.get(username=request.user)
+    print(user)
     parent_project = int(request.data['parent_project'])
     created_on = request.data['created_on']
     title = request.data['ticket']['title']
