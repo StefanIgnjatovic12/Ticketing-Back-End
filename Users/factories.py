@@ -6,7 +6,7 @@ from Users.models import User
 from Users.models import Role
 
 roles = ['Developer', 'Admin', 'User']
-emails = ['gmail.com', 'yahoo.com', 'hotmal.com', 'bing.com']
+emails = ['gmail.com', 'yahoo.com', 'hotmail.com', 'bing.com']
 
 @factory.django.mute_signals(signals.post_save)
 class RoleFactory(factory.django.DjangoModelFactory):

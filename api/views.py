@@ -44,6 +44,12 @@ class RegisterAPI(generics.GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
+
+        # assign user the "User" role upon registering
+        user_id = UserSerializer(user, context=self.get_serializer_context()).data['id']
+        user_object = User.objects.get(id=user_id)
+        role = Role.objects.create(user_id=user_id, assigned_role='User')
+        user_object.save()
         return Response({
             "user": UserSerializer(user, context=self.get_serializer_context()).data,
             "token": AuthToken.objects.create(user)[1]
@@ -164,6 +170,7 @@ def get_role_data(request):
 # Update 1 role for 1 person
 @api_view(['PUT'])
 def edit_one_role_data(request, pk):
+
     role = Role.objects.get(user_id=pk)
     serializer = RoleSerializer(instance=role, data=request.data)
     if serializer.is_valid():
@@ -189,6 +196,7 @@ class EditRoleData(APIView):
 
     def put(self, request, *args, **kwargs):
         data = request.data
+        print(data)
         user_ids = [i['user'] for i in data]
         self.validate_ids(user_ids)
         instances = []
