@@ -249,6 +249,7 @@ def get_ticket_details(request, pk):
         'created_by': f"{serializer.data['created_by']['first_name']} {serializer.data['created_by']['last_name']}",
         'parent_project': serializer.data['project']['title'],
         'assigned_developer': assigned_developer,
+        'assigned_developer_id': serializer.data['assigned_developer']['id'],
         'status': serializer.data['status'],
         'type': serializer.data['type']
     }
@@ -462,6 +463,8 @@ def assign_user_to_ticket(request):
     user = User.objects.get(id=user_id[0])
     if ticket.assigned_developer == user:
         return Response('Ticket already assigned to user')
+    elif user.roles.assigned_role == 'User':
+        return Response('Tickets can only be assigned to developers or admins')
     ticket.assigned_developer = user
     ticket.status = 'Assigned/In progress'
     ticket.save()
@@ -586,6 +589,7 @@ def get_project_details(request, pk):
         'title': serializer.data['title'],
         'description': serializer.data['description'],
         'created_by': f"{serializer.data['created_by']['first_name']} {serializer.data['created_by']['last_name']}",
+        'created_by_id': serializer.data['created_by']['id'],
         'created_on': serializer.data['created_on'],
         'id': serializer.data['id']
 
