@@ -27,6 +27,7 @@ from knox.views import LoginView as KnoxLoginView
 from django.http import JsonResponse
 
 from rest_framework.authentication import BasicAuthentication
+import uuid
 
 # password reset
 from django.core.mail import EmailMultiAlternatives
@@ -723,3 +724,39 @@ def create_project(request):
 
     project.assigned_users.set(users_to_assign_list)
     return Response('Project created')
+
+# _________________AUTOCOMPLETE SEARCH______________
+@api_view(['GET'])
+def autocomplete_search(request):
+    ticket_query_set = Ticket.objects.all()
+    project_query_set = Project.objects.all()
+    user_query_set = User.objects.all()
+    response_list = []
+    for project in project_query_set:
+        response_list.append(
+            {
+                'title': project.title,
+                'id': project.id,
+                'type': 'Projects',
+                'key': uuid.uuid4()
+             }
+        )
+    for ticket in ticket_query_set:
+        response_list.append(
+            {
+                'title': ticket.title,
+                'id': ticket.id,
+                'type': 'Tickets',
+                'key': uuid.uuid4()
+             }
+        )
+    for user in user_query_set:
+        response_list.append(
+            {
+                'title': user.username,
+                'id': user.id,
+                'type': 'Users',
+                'key': uuid.uuid4()
+            }
+        )
+    return Response(response_list)
