@@ -87,7 +87,8 @@ def password_reset_token_created(sender, instance, reset_password_token, *args, 
         'email': reset_password_token.user.email,
         'reset_password_url': "{}?token={}".format(
             instance.request.build_absolute_uri(reverse('password_reset:reset-password-confirm')),
-            reset_password_token.key)
+            reset_password_token.key),
+        'react_reset_url': f"http://localhost:3000/password-reset/{reset_password_token.key}"
     }
 
     # render email text
@@ -102,11 +103,12 @@ def password_reset_token_created(sender, instance, reset_password_token, *args, 
         # from:
         "pythontesting85@gmail.com",
         # to:
-        ['pythontesting85@gmail.com']
+        [reset_password_token.user.email]
     )
     msg.attach_alternative(email_html_message, "text/html")
     # print(email_plaintext_message)
     msg.send()
+    return Response('Password reset')
 
 
 @api_view(['GET'])
@@ -234,7 +236,7 @@ def get_ticket_details(request, pk):
     else:
         assigned_developer = 'Unassigned'
     ticket_author = {
-        'user_id': serializer.data['id'],
+        'user_id': serializer.data['created_by']['id'],
         'username': serializer.data['created_by']['username'],
         'first_name': serializer.data['created_by']['first_name'],
         'last_name': serializer.data['created_by']['last_name'],
@@ -247,7 +249,8 @@ def get_ticket_details(request, pk):
         'created_on': serializer.data['created_on'],
         'priority': serializer.data['priority'],
         'update_time': serializer.data['update_time'],
-        'created_by': f"{serializer.data['created_by']['first_name']} {serializer.data['created_by']['last_name']}",
+        'created_by': f"{serializer.data['created_by']['first_name']} {serializer.data['created_by']['last_name']}",\
+        'created_by_id': serializer.data['created_by']['id'],
         'parent_project': serializer.data['project']['title'],
         'assigned_developer': assigned_developer,
         'assigned_developer_id': serializer.data['assigned_developer']['id'],
