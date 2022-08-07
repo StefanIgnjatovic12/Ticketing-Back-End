@@ -1,0 +1,1 @@
+web: gunicorn Ticketing_system_and_issue_tracker.wsgi
