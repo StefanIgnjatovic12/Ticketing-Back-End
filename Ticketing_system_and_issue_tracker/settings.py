@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-ohuh^epickfm)$29v#v--5q^itekvt%a@sy$72flo*=52lzth&
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['drf-react-ticketing-backend.herokuapp.com']
 
 # Application definition
 
