@@ -27,8 +27,8 @@ SECRET_KEY = 'django-insecure-ohuh^epickfm)$29v#v--5q^itekvt%a@sy$72flo*=52lzth&
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['drf-react-ticketing-backend.herokuapp.com', 'https://drf-react-ticketing-frontend.herokuapp.com/']
-CORS_ALLOWED_ORIGINS = ['https://drf-react-ticketing-backend.herokuapp.com', 'https://drf-react-ticketing-frontend.herokuapp.com/']
+ALLOWED_HOSTS = ['drf-react-ticketing-backend.herokuapp.com', 'https://drf-react-ticketing-frontend.herokuapp.com']
+CORS_ALLOWED_ORIGINS = ['https://drf-react-ticketing-backend.herokuapp.com', 'https://drf-react-ticketing-frontend.herokuapp.com']
 # Application definition
 
 INSTALLED_APPS = [
