@@ -28,7 +28,6 @@ SECRET_KEY = 'django-insecure-ohuh^epickfm)$29v#v--5q^itekvt%a@sy$72flo*=52lzth&
 DEBUG = True
 
 ALLOWED_HOSTS = ['drf-react-ticketing-backend.herokuapp.com', 'https://drf-react-ticketing-frontend.herokuapp.com']
-CORS_ALLOWED_ORIGINS = ['https://drf-react-ticketing-backend.herokuapp.com', 'https://drf-react-ticketing-frontend.herokuapp.com']
 # Application definition
 
 INSTALLED_APPS = [
@@ -147,7 +146,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ORIGIN_ALLOW_ALL = False
 CORS_ALLOW_CREDENTIALS = True
-
+CORS_ALLOWED_ORIGINS = ['https://drf-react-ticketing-frontend.herokuapp.com']
 CORS_ALLOW_HEADERS = ("x-requested-with", "content-type", "accept", "origin", "authorization", "x-csrftoken")
 
 REST_FRAMEWORK = {
