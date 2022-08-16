@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 
 import os
 from pathlib import Path
-
+from .defaults import DEFAULT_HEADERS
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 
 
@@ -148,17 +148,7 @@ CORS_ORIGIN_ALLOW_ALL = False
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = ["https://drf-react-ticketing-frontend.herokuapp.com"]
 
-CORS_ALLOW_HEADERS = [
-    "accept",
-    "accept-encoding",
-    "authorization",
-    "content-type",
-    "dnt",
-    "origin",
-    "user-agent",
-    "x-csrftoken",
-    "x-requested-with",
-]
+CORS_ALLOW_HEADERS = DEFAULT_HEADERS
 
 CORS_ALLOW_METHODS = [
     "DELETE",
