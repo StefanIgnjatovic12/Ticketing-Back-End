@@ -147,7 +147,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = ["https://drf-react-ticketing-frontend.herokuapp.com", "http://drf-react-ticketing-frontend.herokuapp.com'"]
-
+CSRF_TRUSTED_ORIGINS = ["https://drf-react-ticketing-frontend.herokuapp.com", "http://drf-react-ticketing-frontend.herokuapp.com'"]
 CORS_ALLOW_HEADERS = DEFAULT_HEADERS
 
 CORS_ALLOW_METHODS = [
