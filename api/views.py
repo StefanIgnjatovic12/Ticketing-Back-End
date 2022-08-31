@@ -88,7 +88,7 @@ def password_reset_token_created(sender, instance, reset_password_token, *args, 
         'reset_password_url': "{}?token={}".format(
             instance.request.build_absolute_uri(reverse('password_reset:reset-password-confirm')),
             reset_password_token.key),
-        'react_reset_url': f"http://localhost:3000/password-reset/{reset_password_token.key}"
+        'react_reset_url': f"http://drf-react-ticketing-frontend/password-reset/{reset_password_token.key}"
     }
 
     # render email text
