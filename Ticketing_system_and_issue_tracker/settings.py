@@ -171,7 +171,7 @@ EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = "pythontesting85@gmail.com"
-EMAIL_HOST_PASSWORD = "kidajske12"
+EMAIL_HOST_PASSWORD = ""
 
 SILENCED_SYSTEM_CHECKS = [
     'django_jsonfield_backport.W001'
