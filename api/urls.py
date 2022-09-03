@@ -4,6 +4,8 @@ from knox import views as knox_views
 import api.views
 from . import views
 from api.views import EditRoleData, UploadTicketAttachment, RegisterAPI, LoginAPI
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('password_reset/', include('django_rest_passwordreset.urls', namespace='password_reset')),
@@ -53,4 +55,4 @@ urlpatterns = [
 
     path('search/', views.autocomplete_search)
 
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

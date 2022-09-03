@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 import os
 from pathlib import Path
 from .defaults import DEFAULT_HEADERS
+from decouple import config
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 
 
@@ -47,7 +48,8 @@ INSTALLED_APPS = [
     'django_rest_passwordreset',
     'rest_framework.authtoken',
     'simple_history',
-    'django_cleanup.apps.CleanupConfig'
+    'django_cleanup.apps.CleanupConfig',
+    'storages'
 
 ]
 
@@ -131,8 +133,8 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATIC_URL = 'static/'
+# STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+# STATIC_URL = 'static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
@@ -163,8 +165,8 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': ('knox.auth.TokenAuthentication',),
 }
 
-MEDIA_URL = '/attachments/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'attachments')
+# MEDIA_URL = '/attachments/'
+# MEDIA_ROOT = os.path.join(BASE_DIR, 'attachments')
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = "smtp.gmail.com"
@@ -176,3 +178,28 @@ EMAIL_HOST_PASSWORD = ""
 SILENCED_SYSTEM_CHECKS = [
     'django_jsonfield_backport.W001'
 ]
+
+# STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'collected-static'
+
+# MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'collected-media'
+S3_ENABLED = config('S3_ENABLED', cast=bool, default=False)
+AWS_ACCESS_KEY_ID = config('BUCKETEER_AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = config('BUCKETEER_AWS_SECRET_ACCESS_KEY')
+AWS_STORAGE_BUCKET_NAME = config('BUCKETEER_BUCKET_NAME')
+AWS_S3_REGION_NAME = config('BUCKETEER_AWS_REGION')
+AWS_DEFAULT_ACL = None
+AWS_S3_SIGNATURE_VERSION = config('S3_SIGNATURE_VERSION', default='s3v4')
+AWS_S3_ENDPOINT_URL = f'https://{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
+AWS_S3_OBJECT_PARAMETERS = {'CacheControl': 'max-age=86400'}
+
+
+STATIC_DEFAULT_ACL = 'public-read'
+STATIC_LOCATION = 'static'
+STATIC_URL = f'{AWS_S3_ENDPOINT_URL}/{STATIC_LOCATION}/'
+STATICFILES_STORAGE = 'utils.storage_backends.StaticStorage'
+
+PUBLIC_MEDIA_DEFAULT_ACL = 'public-read'
+PUBLIC_MEDIA_LOCATION = 'media/public'
+MEDIA_URL = f'{AWS_S3_ENDPOINT_URL}/{PUBLIC_MEDIA_LOCATION}/'

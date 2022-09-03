@@ -1,3 +1,4 @@
+import boto3
 from django.contrib.auth.models import User
 from rest_framework.decorators import api_view
 from datetime import datetime
@@ -28,6 +29,8 @@ from django.http import JsonResponse
 
 from rest_framework.authentication import BasicAuthentication
 import uuid
+from Ticketing_system_and_issue_tracker.settings import AWS_SECRET_ACCESS_KEY, AWS_ACCESS_KEY_ID
+from smart_open import open as smart_opener
 
 # password reset
 from django.core.mail import EmailMultiAlternatives
@@ -504,9 +507,20 @@ class UploadTicketAttachment(APIView):
 
 @api_view(['GET'])
 def download_attachment(request, pk):
+    session = boto3.Session(aws_access_key_id=AWS_ACCESS_KEY_ID,
+                            aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
     obj = Attachment.objects.get(id=pk)
     filename = obj.file.path
-    response = FileResponse(open(filename, 'rb'))
+    with smart_opener(f's3://bucketeer-0f6cb5f5-34a1-49a1-ab57-f884d7245601/bucketeer-0f6cb5f5-34a1-49a1-ab57'
+                      f'-f884d7245601/media/public/ticket_attachments/{filename}',
+                      "rb",
+                      transport_params={
+                          'client':
+                              session.client(
+                                  's3')}) \
+            as attachment:
+
+        response = FileResponse(open(attachment, 'rb'))
     response['Content-Disposition'] = f'attachment; filename={obj.file.name}'
     return response
 

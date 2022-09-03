@@ -1,3 +1,5 @@
+import pathlib
+
 from django.db import models
 
 
@@ -59,8 +61,12 @@ class Comment(models.Model):
     def __str__(self):
         return self.content
 
+def _attachment_upload_path(filename):
+    file_extension = pathlib.Path(filename).suffix
+    return f'ticket_attachments/{filename}{file_extension}'
+
 class Attachment(models.Model):
-    file = models.FileField(blank=True, null=True)
+    file = models.FileField(upload_to=_attachment_upload_path, blank=True, null=True)
     created_on = models.CharField(max_length=20, null=True)
     uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, related_name="uploaded_by")
     parent_ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE, null=True, related_name="attachment")
