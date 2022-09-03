@@ -1,0 +1,15 @@
+{
+  "name": "React/Django Ticketing System",
+  "description": "Ticketing/project management system made using React, Django Rest Framework and Material UI",
+  "addons": [
+    {
+      "plan": "bucketeer:hobbyist",
+      "as": "BUCKETEER"
+    }
+  ],
+  "env": {
+    "S3_ENABLED": {
+      "description": "Enable to upload & serve static and media files from S3",
+      "value": "True"
+    }
+  }}
