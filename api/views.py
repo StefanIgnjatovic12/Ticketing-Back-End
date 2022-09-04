@@ -492,10 +492,7 @@ class UploadTicketAttachment(APIView):
     parser_classes = (MultiPartParser, FormParser)
 
     def post(self, request, format=None):
-
         user = request.user
-        print('This is the data:')
-        print(request.data)
         serializer = AttachmentSerialiazer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             serializer.validated_data['uploaded_by'] = user
