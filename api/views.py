@@ -497,13 +497,12 @@ class UploadTicketAttachment(APIView):
         print('This is the data:')
         print(request.data)
         serializer = AttachmentSerialiazer(data=request.data)
-        if serializer.is_valid():
+        if serializer.is_valid(raise_exception=True):
             serializer.validated_data['uploaded_by'] = user
             serializer.save()
             return Response(serializer.data['id'])
         else:
-
-            return Response(serializer.errors)
+            return Response(f'{serializer.errors}, attachment upload failed')
 
 
 @api_view(['GET'])
