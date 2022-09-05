@@ -88,6 +88,9 @@ def demo_account_signin(request):
     if r.status_code == 200:
         response_dict = json.loads(r.text)
         return Response({'token': response_dict['access_token']})
+    print('Failed demo login reasons:')
+    print(r.status_code)
+    print(r.reason)
     return Response('Could not save data')
 
 # Password reset view > need to add user and password to settings
