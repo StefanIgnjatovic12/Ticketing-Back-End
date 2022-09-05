@@ -38,7 +38,8 @@ from django.dispatch import receiver
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django_rest_passwordreset.signals import reset_password_token_created
-
+import requests
+import json
 
 # Register API
 class RegisterAPI(generics.GenericAPIView):
@@ -80,6 +81,14 @@ class LoginAPI(KnoxLoginView):
         }
         return data
 
+@api_view(['POST'])
+def demo_account_signin(request):
+    params = {'username': 'Test', 'password': 'gofastmen12'}
+    r = requests.post('https://drf-react-ticketing-backend.herokuapp.com/api/login/', json=params)
+    if r.status_code == 200:
+        response_dict = json.loads(r.text)
+        return Response({'token': response_dict['access_token']})
+    return Response('Could not save data')
 
 # Password reset view > need to add user and password to settings
 @receiver(reset_password_token_created)
