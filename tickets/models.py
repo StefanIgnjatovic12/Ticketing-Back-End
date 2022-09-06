@@ -2,7 +2,6 @@ import pathlib
 
 from django.db import models
 
-
 from django.contrib.auth.models import User
 from django.utils import timezone
 from django.conf import settings
@@ -63,7 +62,7 @@ class Comment(models.Model):
 
 
 class Attachment(models.Model):
-    file = models.FileField(upload_to="ticket_attachments", blank=True, null=True)
+    file = models.FileField(upload_to="ticket_attachments", validators=[validate_file_type], blank=True, null=True)
     created_on = models.CharField(max_length=20, null=True)
     uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, related_name="uploaded_by")
     parent_ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE, null=True, related_name="attachment")
