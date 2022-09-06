@@ -9,7 +9,7 @@ from django.conf import settings
 from django.urls import reverse
 from simple_history.models import HistoricalRecords
 from projects.models import Project
-
+from api.validators import validate_file_type
 
 class Ticket(models.Model):
     PRIORITY_CHOICES = [
