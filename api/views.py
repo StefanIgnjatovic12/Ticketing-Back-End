@@ -521,7 +521,7 @@ def download_attachment(request, pk):
     obj = Attachment.objects.get(id=pk)
     # filename = obj.file.path
     with smart_opener(f's3://bucketeer-0f6cb5f5-34a1-49a1-ab57-f884d7245601/bucketeer-0f6cb5f5-34a1-49a1-ab57'
-                      f'-f884d7245601/media/public/ticket_attachments/{str(obj)}',
+                      f'-f884d7245601/media/public/{str(obj)}',
                       "rb",
                       transport_params={
                           'client':
