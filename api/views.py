@@ -519,7 +519,6 @@ def download_attachment(request, pk):
     session = boto3.Session(aws_access_key_id=AWS_ACCESS_KEY_ID,
                             aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
     obj = Attachment.objects.get(id=pk)
-    # filename = obj.file.path
     with smart_opener(f's3://bucketeer-0f6cb5f5-34a1-49a1-ab57-f884d7245601/bucketeer-0f6cb5f5-34a1-49a1-ab57'
                       f'-f884d7245601/media/public/{str(obj)}',
                       "rb",
