@@ -525,10 +525,7 @@ def download_attachment(request, pk):
                               session.client(
                                   's3')}) \
             as attachment:
-        print('type:')
-        print(attachment)
-        print(type(attachment))
-        response = FileResponse(open(attachment, 'rb'))
+        response = FileResponse(open(attachment.read(), 'rb'))
     response['Content-Disposition'] = f'attachment; filename={obj.file.name}'
     return response
 
