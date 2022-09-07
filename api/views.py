@@ -40,7 +40,7 @@ from django.urls import reverse
 from django_rest_passwordreset.signals import reset_password_token_created
 import requests
 import json
-
+import re
 # Register API
 class RegisterAPI(generics.GenericAPIView):
     serializer_class = RegisterSerializer
@@ -214,7 +214,6 @@ class EditRoleData(APIView):
 
     def put(self, request, *args, **kwargs):
         data = request.data
-        print(data)
         user_ids = [i['user'] for i in data]
         self.validate_ids(user_ids)
         instances = []
@@ -283,11 +282,10 @@ def get_ticket_details(request, pk):
             }
         )
     for attachment in serializer.data['attachment']:
-        print('attachment file name:')
-        print(attachment['file'])
         attachment_list.append(
             {
-                'file_name': attachment['file'].split("/")[2],
+                # 'file_name': attachment['file'].split("/")[2],
+                'file_name': re.search('ticket_attachments/(.*)\?', attachment['file']).group(1),
                 'uploaded_by': f"{attachment['uploaded_by']['first_name']} {attachment['uploaded_by']['last_name']}",
                 'created_on': attachment['created_on'],
                 'id': attachment['id']
@@ -455,7 +453,6 @@ def edit_ticket_data(request, pk):
 @api_view(['POST'])
 def create_ticket(request):
     user = User.objects.get(username=request.user)
-    print(user)
     parent_project = int(request.data['parent_project'])
     created_on = request.data['created_on']
     title = request.data['ticket']['title']
@@ -489,7 +486,6 @@ def assign_user_to_ticket(request):
     ticket.assigned_developer = user
     ticket.status = 'Assigned/In progress'
     ticket.save()
-    print(ticket)
     return Response('User assigned to ticket')
 
 
