@@ -283,6 +283,8 @@ def get_ticket_details(request, pk):
             }
         )
     for attachment in serializer.data['attachment']:
+        print('attachment file name:')
+        print(attachment['file'])
         attachment_list.append(
             {
                 'file_name': attachment['file'].split("/")[2],
