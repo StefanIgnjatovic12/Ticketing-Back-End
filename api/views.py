@@ -84,6 +84,7 @@ class LoginAPI(KnoxLoginView):
 @api_view(['POST'])
 def demo_account_signin(request):
     params = {'username': 'Test', 'password': 'gofastmen12'}
+
     r = requests.post('https://drf-react-ticketing-backend.herokuapp.com/api/login/', json=params)
     if r.status_code == 200:
         response_dict = json.loads(r.text)
