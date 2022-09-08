@@ -521,7 +521,7 @@ def download_attachment(request, pk):
                       "rb",
                       transport_params={'client':session.client('s3')}) as attachment:
         response = FileResponse(attachment)
-    response['Content-Disposition'] = f'attachment; filename={obj.file.name}'
+    response['Content-Disposition'] = f'attachment; filename={str(obj)}'
     return response
 
 
